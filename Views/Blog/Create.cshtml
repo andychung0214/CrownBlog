@@ -1,0 +1,216 @@
+﻿@model CrownBlog.Models.ViewModel.ArticleModel
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_LayoutBlog.cshtml";
+}
+
+@section Css{
+    <style>
+
+        .ui-timepicker-standard a {
+            color: #9bcc60;
+        }
+    </style>
+}
+
+
+@section HeaderScripts{
+
+    <script src="https://andychung0214.synology.me/lib/ckeditor/ckeditor.js"></script>
+    <script src="https://andychung0214.synology.me/lib/ckeditor/config.js"></script>
+
+    <script type="text/javascript" src="https://andychung0214.synology.me/lib/moment/moment.js"></script>
+}
+
+
+@section Scripts{
+
+
+    <script type="text/javascript">
+
+
+        function getSelectedTag() {
+            var selectedTags = "";
+            debugger
+            $.each($("input:checked"), function (idx, events) {
+                if (idx !== $("input:checked").length - 1) {
+                    selectedTags += $(this).val() + ",";
+                } else {
+                    selectedTags += $(this).val();
+                }
+            })
+            return selectedTags;
+        }
+
+        $('#btnCreateTag').on('click', function () {
+            var $txtCreateTag = $('#txtCreateTag');
+            var $txtCreateTagValue = $('#txtCreateTag').val();
+
+            var selectedTags = getSelectedTag();
+            var arrSelectedTags = selectedTags.split(',');
+            var isExistTag = arrSelectedTags.indexOf($txtCreateTagValue);
+            if ($txtCreateTag.val() !== null && $txtCreateTag.val() !== "" && isExistTag === -1) {
+                var createHtml = '<input type="checkbox" value="' + $txtCreateTag.val() + '" checked name="SelectedTags">' + $txtCreateTag.val()
+                $('#defaultTag').append(createHtml);
+            } else {
+                $('#aError').trigger('click');
+            }
+        });
+
+        $('#datepicker').val("@DateTime.Now.ToString("yyyy-MM-dd")");
+        $('#timespan').val("@DateTime.Now.ToString("HH:mm")");
+
+        $('#formAddArticle').on('submit', function (event) {
+            debugger
+
+            var selectedTags = getSelectedTag();
+
+            var articleId = _uuid();
+
+            var createdDate = new Date();
+            createdDate = $('#datepicker').val() + " " + $('#timespan').val();
+
+            var ckeditorDesc = CKEDITOR.instances.formDesc.getData();
+            var articleData = {
+                Id: articleId,
+                Title: $('#formTitle').val(),
+                Description: ckeditorDesc,
+                abstract: $('#formAbstract').val(),
+                BannerUrl: $('#formBannerURL').val(),
+                Status: $('#select-status').val(),
+                CreateDate: createdDate,
+                TagSelectedStrings: selectedTags
+            };
+
+            SaveArticle("Create", articleData);
+            event.preventDefault();
+        });
+
+        $('#datepicker').datepicker({
+            dateFormat: "yy-mm-dd"
+        });
+
+        $(".timepicker").timepicker({
+            timeFormat: "HH:mm", // 時間隔式
+            interval: 1, //時間間隔
+            minTime: "06", //最小時間
+            maxTime: "23:55pm", //最大時間
+            startTime: "01:00", // 開始時間
+            dynamic: true, //是否顯示項目，使第一個項目按時間順序緊接在所選時間之後
+            dropdown: true, //是否顯示時間條目的下拉列表
+            scrollbar: false, //是否顯示捲軸
+        });
+
+        $('#select-status').change(function () {
+            var selectStatus = $(this).val();
+            $("#select-status option[text='" + selectStatus +"'").attr("selected", true);
+        });
+
+        //$('#select-status').select("Disable");
+
+        function changeTag(idx) {
+            //$("#cb-" + idx).prop("checked", "checked");
+            if (!$(this).prop("checked")) {
+                $(this).prop("checked", "checked");
+            } else {
+                $(this).removeAttr("checked");
+            }
+        }
+
+
+        var requiredCheckboxes = $(':checkbox[required]');
+
+        requiredCheckboxes.change(function () {
+            if (requiredCheckboxes.is(':checked')) {
+                requiredCheckboxes.removeAttr('required');
+            }
+            else {
+                requiredCheckboxes.attr('required', 'required');
+            }
+        });
+
+    </script>
+
+}
+
+<section class="">
+    <div class="container">
+        <form id="formAddArticle">
+            @*@Html.AntiForgeryToken()*@
+
+            <div class="form-group">
+                <label for="formTitle">Title</label>
+                <input id="formTitle" type="text" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="formAbstract">Abstract</label>
+                <input id="formAbstract" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="formDesc">Description</label>
+                <textarea id="formDesc" style="height:400px" ref="formDesc" class="form-control ckeditor"></textarea>
+                @*<input id="formDesc" multiple type="text" class="form-control" />*@
+            </div>
+
+            <div class="form-group">
+                <label for="formBannerURL">Banner:</label>
+                <input id="formBannerURL" type="text" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="datepicker">Date:</label>
+                <input id="datepicker" type="text" class="datepicker" >
+
+                <label for="timespan">Time:</label>
+                <input id="timespan"  type="text" class="timepicker">
+
+                @*<label for="formDate">Date</label>
+                    <input id="formDate" ref="formDate" type="date" class="form-control" />*@
+            </div>
+
+            <div class="form-group">
+                <label for="formTags">Tags:</label>
+                <fieldset>
+                    <div id="defaultTag">
+                        @if(Model.Tags != null && Model.Tags.Count >= 0){
+                                var tagIndex = 0;
+
+                            @foreach(var tagItem in Model.Tags)
+                            {
+
+                                <input id="cb-@tagIndex" type="checkbox" value="@tagItem.Name" name="SelectedTags"> 
+                                <label for="cb-@tagIndex">@tagItem.Name</label>
+                            }
+                                tagIndex += 1;
+
+                        }
+                    </div> 
+                </fieldset>
+                <input id="txtCreateTag" type="text" placeholder="Enter Tag Name" />
+                <button id="btnCreateTag" class="btn btn-success" type="button">Create Tag</button>
+
+            </div>
+
+
+
+            <div class="form-group">
+                <label for="select-status">Status:</label>
+                <select id="select-status" class="form-control">
+                    <option value=""></option>
+                    <option value="0">Disable</option>
+                    <option value="1">Enable</option>
+                </select>
+            </div>
+
+            @*<div>@CrownResources.GetResource("Sensive", "FormSubmit")</div>*@
+            <input id="btnSubmit"  type="submit" class="btn btn-success" value="Submit" />
+            <a class="btn btn-success" href="/blog/index">Back to List</a>
+        </form>
+
+    </div>
+</section>
+
+

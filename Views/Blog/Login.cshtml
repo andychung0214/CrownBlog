@@ -1,0 +1,96 @@
+﻿@model CrownBlog.Models.ViewModel.ArticleModel
+
+@{
+    ViewData["PageTitle"] = "Blog List";
+
+    Layout = "~/Views/Shared/_LayoutBlog.cshtml";
+}
+
+
+@section HeaderScripts{
+    <script type="text/javascript">
+        function setCookie(cname, cvalue, exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toGMTString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+
+        function getCookie(cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        function checkCookie() {
+            var user = getCookie("username");
+            if (user != "") {
+                alert("Welcome again " + user);
+            } else {
+                user = prompt("Please enter your name:", "");
+                if (user != "" && user != null) {
+                    setCookie("username", user, 30);
+                }
+            }
+        }
+
+    </script>
+}
+
+@section Scripts{
+
+    <script type="text/javascript">
+        var loginInfo = {
+            UserName: $('#txtAccount').val(),
+            UserPassword: $('#txtPassowrd').val()
+        };
+
+        $('#formLogin').on('submit', function (event) {
+            if ($('#txtAccount').val() == "am" && $('#txtPassword').val() == "02141012") {
+                setCookie("CrownAuth", "AndyandMumu", new Date(2021, 3, 7, 12, 0, 0, 0))
+                window.alert('Auth success');
+            } else {
+                window.alert('Auth fail');
+            }
+
+            event.preventDefault();
+        });
+    </script>
+}
+
+<partial name="../Shared/_Header.cshtml" />
+
+<main id="main" class="site-main">
+    <partial name="../Shared/_Banner.cshtml" />
+
+    <section class="">
+        <div class="container">
+
+            <form id="formLogin">
+
+                <h1>Login</h1>
+                <label for="txtAccount">Account</label>
+                <input id="txtAccount" type="text" class="form-control" />
+                <label for="txtPassowrd">Password</label>
+                <input id="txtPassword" teyp="text" class="form-control" />
+
+                <input id="btnSubmit" type="submit" />
+                <a href="/blog/index">回到文章清單</a>
+            </form>
+
+        </div>
+    </section>
+
+</main>
+
+

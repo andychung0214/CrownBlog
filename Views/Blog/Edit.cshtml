@@ -1,0 +1,193 @@
+﻿@model CrownBlog.Models.ViewModel.ArticleModel
+
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutBlog.cshtml";
+}
+
+
+@section Css{
+    <style>
+
+        .ui-timepicker-standard a {
+            color: #9bcc60;
+        }
+    </style>
+}
+
+@section HeaderScripts{
+
+    <script type="text/javascript">
+        window.articleId = "@ViewBag.articleId";
+    </script>
+    <script src="https://andychung0214.synology.me/lib/ckeditor/ckeditor.js"></script>
+    <script src="https://andychung0214.synology.me/lib/ckeditor/config.js"></script>
+}
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+        function getSelectedTag() {
+            var selectedTags = "";
+            $.each($("input[name='SelectedTags']:checked"), function (idx, events) {
+                if (idx !== $("input[name='SelectedTags']:checked").length - 1) {
+                    selectedTags += $(this).val() + ",";
+                } else {
+                    selectedTags += $(this).val();
+                }
+            })
+            return selectedTags;
+        }
+        $('#btnCreateTag').on('click', function () {
+            var $txtCreateTag = $('#txtCreateTag');
+            var $txtCreateTagValue = $('#txtCreateTag').val();
+
+            var selectedTags = getSelectedTag();
+            var arrSelectedTags = selectedTags.split(',');
+            var isExistTag = arrSelectedTags.indexOf($txtCreateTagValue);
+            debugger
+            if ($txtCreateTag.val() !== null && $txtCreateTag.val() !== "" && isExistTag === -1) {
+                var createHtml = '<input type="checkbox" value="' + $txtCreateTag.val() + '" checked name="SelectedTags">' + $txtCreateTag.val()
+                $('#defaultTag').append(createHtml);
+            } else {
+                $('#aError').trigger('click');
+            }
+        });
+
+
+        $('#formEditArticle').on('submit', function (event) {
+            var selectedTags = getSelectedTag();
+            var createdDate = new Date();
+            if ($('#datepicker').val() !== null && $('#timespan').val() !== null) {
+                createdDate = $('#datepicker').val() + " "+ $('#timespan').val();
+            }
+
+            var ckeditorDesc = CKEDITOR.instances.formDesc.getData();
+            var articleData = {
+                id: "@Model.Id",
+                title: $('#formTitle').val(),
+                Description: ckeditorDesc,
+                Abstract: $('#formAbstract').val(),
+                BannerUrl: $('#formBannerURL').val(),
+                Status: $('#select-status').val(),
+                CreateDate: createdDate,
+                ModifyDate: '@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")',
+                TagSelectedStrings: selectedTags
+            };
+            //var SelectedTags = Request.Form.GetValues("SelectedTags");
+            debugger
+
+            SaveArticle("Update", articleData);
+            event.preventDefault();
+        });
+
+        $('#datepicker').datepicker({
+            dateFormat: "yy-mm-dd"
+        });
+
+        $(".timepicker").timepicker({
+            timeFormat: "HH:mm", // 時間隔式
+            interval: 30, //時間間隔
+            minTime: "06", //最小時間
+            maxTime: "23:55pm", //最大時間
+            //defaultTime: "06", //預設起始時間
+            startTime: "01:00", // 開始時間
+            dynamic: true, //是否顯示項目，使第一個項目按時間順序緊接在所選時間之後
+            dropdown: true, //是否顯示時間條目的下拉列表
+            scrollbar: false //是否顯示捲軸
+        });
+
+        $('#select-status').val(@Model.Status);
+
+
+    </script>
+}
+
+<div class="container">
+    <form id="formEditArticle">
+        @*@Html.AntiForgeryToken()*@
+        @*<div asp-validation-summary="ModelOnly" class="text-danger"></div>*@
+        @*<input type="hidden" asp-for="Id" value="@ViewBag.articleId" />*@
+        <div class="form-group">
+            <label for="Title">Title</label>
+            <input id="formTitle" for="Title" class="form-control" value="@Model.Title" />
+            @*<span asp-validation-for="Title" class="text-danger"></span>*@
+        </div>
+
+        <div class="form-group">
+            <label for="formAbstract">Abstract</label>
+            <input id="formAbstract" class="form-control" value="@Model.Abstract" />
+            @*<span asp-validation-for="Abstract" class="text-danger"></span>*@
+        </div>
+
+        <div class="form-group">
+            <label for="formDesc">Description</label>
+            <textarea id="formDesc" form="formDesc" style="height:400px" class="form-control ckeditor"> @Html.Raw(Model.Description)</textarea>
+            @*<span asp-validation-for="Description" class="text-danger"></span>*@
+        </div>
+
+        <div class="form-group">
+            <label for="formBannerURL">Banner:</label>
+            <input id="formBannerURL" type="text" class="form-control" value="@Model.BannerUrl">
+        </div>
+
+        <div class="form-group">
+            <label for="datepicker">Date:</label>
+            <input type="text" class="datepicker" id="datepicker" value=@Convert.ToDateTime(Model.CreateDate).ToString("yyyy-MM-dd")>
+
+            <label for="timespan">Time:</label>
+            <input id="timespan" type="text" class="timepicker" value="@Convert.ToDateTime(Model.CreateDate).ToString("HH:mm")">
+
+            @*<label for="formDate">Date</label>
+                <input id="formDate" ref="formDate" type="date" class="form-control" />*@
+        </div>
+
+        <div class="form-group">
+            <label for="formTags">Tags:</label>
+
+            <fieldset>
+                <div id="defaultTag">
+                    @if(Model.Tags != null && Model.Tags.Count >= 0){
+                    @foreach(var tagItem in Model.Tags)
+                    {
+                        var tagIndex = 0;
+                    @if(Model.SelectedTags != null && Model.SelectedTags.Count >= 0){
+                    @if (Model.SelectedTags.Contains(tagItem.Name)){
+                    <input id="cb-@tagIndex" type="checkbox" value="@tagItem.Name" checked name="SelectedTags">
+                    <label for="cb-@tagIndex">@tagItem.Name</label>
+                            }
+                            else{
+                    <input id="cb-@tagIndex" type="checkbox" value="@tagItem.Name" name="SelectedTags">
+                    <label for="cb-@tagIndex">@tagItem.Name</label>
+
+                            }
+                        }
+                        tagIndex += 1;
+                    }
+                }
+                </div>
+            </fieldset>
+            <input id="txtCreateTag" type="text" placeholder="Enter Tag Name" />
+            <button id="btnCreateTag" class="btn btn-success" type="button">Create Tag</button>
+
+        </div>
+
+        <div class="form-group">
+            <label for="select-status">Status:</label>
+            <select id="select-status" class="form-control">
+                <option value=""></option>
+                <option value="0">Disable</option>
+                <option value="1">Enable</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <button id="btnSubmit" class="btn btn-success" type="submit">Save</button>
+            <a class="btn btn-success" href="/blog/index">Back to List</a>
+        </div>
+    </form>
+</div>
+
+

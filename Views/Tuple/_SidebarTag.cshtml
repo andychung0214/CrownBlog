@@ -1,0 +1,30 @@
+﻿@model CrownBlog.Models.ViewModel.ArticleModel
+
+<div class="single-sidebar-widget post-category-widget">
+    <h4 class="single-sidebar-widget__title">Category</h4>
+    <ul class="cat-list mt-20">
+
+        @foreach (var item in Model.Tags)
+        {
+            
+            <li>
+                @if(item.Name.EndsWith("#"))
+                {
+                    
+                <a href="/blog/category?categoryName=c-sharp" class="d-flex justify-content-between">
+                    <p>@item.Name</p>
+                    <p>(@item.Count)</p>
+                </a>
+                }else{
+                
+                <a href="/blog/category?categoryName=@item.Name" class="d-flex justify-content-between">
+                    <p>@item.Name</p>
+                    <p>(@item.Count)</p>
+                </a>
+                }
+            </li>
+        }
+
+    </ul>
+</div>
+

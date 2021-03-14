@@ -1,0 +1,85 @@
+﻿@model CrownBlog.Models.ViewModel.ArticleModel
+@{
+    ViewBag.Title = "Category";
+    Layout = "~/Views/Shared/_LayoutBlog.cshtml";
+}
+
+@section Css{
+    <style>
+
+        .card-img {
+            height: 350px;
+        }
+    </style>
+}
+
+
+<partial name="../Shared/_Header.cshtml" />
+
+<!--================ Hero sm Banner start =================-->
+<partial name="../Shared/_Banner.cshtml" />
+<!--================ Hero sm Banner end =================-->
+<!--================ Start Blog Post Area =================-->
+<section id="cateogyrSection" class="blog-post-area section-margin">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="row">
+                    @foreach (var item in Model.ArticleModels)
+                    {
+                        <div class="col-md-6">
+                            <div class="single-recent-blog-post card-view">
+                                <div class="thumb">
+                                    <img class="card-img rounded-0" src=@item.BannerUrl alt="">
+                                    <ul class="thumb-info">
+                                        <li><a href="#"><i class="ti-user"></i>Admin</a></li>
+                                        <li><a href="#"><i class="ti-themify-favicon"></i>@item.CommentCount  Comments</a></li>
+                                    </ul>
+                                </div>
+                                <div class="details mt-20">
+                                    <a href="blog-single.html">
+                                        <h3>
+                                            @item.Title
+                                        </h3>
+                                    </a>
+                                    <p>@item.Abstract</p>
+                                    <a class="button" href="/blog/details/@item.Id" >Read More <i class="ti-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-lg-12">
+
+                            @await Component.InvokeAsync("Pagination")
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Start Blog Post Siddebar -->
+            <div class="col-lg-4 sidebar-widgets">
+                <div class="widget-wrap">
+                    <partial name="../Tuple/_SearchBar.cshtml" />
+
+                    @if (Model.Calendars != null && Model.Calendars.Count > 0)
+                    {
+                        @*@Html.Partial("../Tuple/_SidebarCalendar", Model)*@
+                        @await Html.PartialAsync("../Tuple/_SidebarCalendar", Model)
+                    }
+
+                    @if (Model.Tags != null && Model.Tags.Count > 0)
+                    {
+                        @*@Html.Partial("../Tuple/_SidebarTag", Model.Tags)*@
+                        @await Html.PartialAsync("../Tuple/_SidebarTag", Model)
+                    }
+
+                </div>
+            </div>
+            <!-- End Blog Post Siddebar -->
+        </div>
+</section>
+<!--================ End Blog Post Area =================-->

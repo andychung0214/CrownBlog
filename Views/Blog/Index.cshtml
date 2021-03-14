@@ -1,0 +1,134 @@
+﻿@model CrownBlog.Models.ViewModel.ArticleModel;
+
+@using CrownBlog.BLL;
+@using System
+@using System.Collections.Generic
+@using System.Globalization
+
+@{
+    ViewData["PageTitle"] = "Blog List";
+
+    Layout = "~/Views/Shared/_LayoutBlog.cshtml";
+}
+
+
+<partial name="../Shared/_Header.cshtml" />
+
+<main id="main" class="site-main">
+    <!--================Hero Banner start =================-->
+    <partial name="../Shared/_Banner.cshtml" />
+    <!--================Hero Banner end =================-->
+    <!--================ Blog slider start =================-->
+    <section>
+        <div class="container">
+            <div class="owl-carousel owl-theme blog-slider">
+                @if(Model.TopArticles != null && Model.TopArticles.Count >= 0)
+                {
+                    @foreach (var topItem in Model.TopArticles)
+                    {
+                        <div class="card blog__slide text-center">
+                            <div class="blog__slide__img">
+                                <img class="card-img rounded-0" src="@topItem.BannerUrl" alt="">
+                            </div>
+                            <div class="blog__slide__content">
+                                <a class="blog__slide__label" href="/blog/details/@topItem.Id">Memory</a>
+                                <h3><a href="/blog/details/@topItem.Id">@topItem.Title</a></h3>
+                                <p>@topItem.Abstract</p>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+    <!--================ Blog slider end =================-->
+    <!--================ Start Blog Post Area =================-->
+    <section class="blog-post-area section-margin mt-4">
+        <div class="container">
+            <div class="row">
+                <div id="main-article-area" class="col-lg-8">
+
+                    @foreach (var item in Model.ArticleModels)
+                    {
+
+                        <div class="single-recent-blog-post">
+                            <div class="thumb">
+                                <img class="img-fluid" width="730" height="389" src=@item.BannerUrl alt="">
+                                <ul class="thumb-info">
+                                    <li><a href="#"><i class="ti-user"></i>Andy.Chung</a></li>
+                                    <li><a href="#"><i class="ti-notepad"></i>@item.CreateDate.Value.ToString("MMM dd, yyyy", CultureInfo.CreateSpecificCulture("en-GB"))</a></li>
+                                    <li><a href="#"><i class="ti-themify-favicon"></i>@item.CommentCount Comments</a></li>
+                                </ul>
+
+                            </div>
+                            <div class="details mt-20">
+                                <a href="blog-single.html">
+                                    <h3>
+                                        @Html.DisplayFor(modelItem => item.Title)
+                                    </h3>
+                                </a>
+                                @if(item.TagName != null)
+                                {
+
+                                <p class="tag-list-inline">
+                                    Tag:
+                                    @if(Model.TagSelectedItem != null && Model.TagSelectedItem.Count >= 0){
+                                        @for(var i=0; i < Model.TagSelectedItem.Count; i++){
+                                            @if(i == Model.TagSelectedItem.Count - 1)
+                                            {
+                                                <a href="/blog/category?categoryName=@Model.TagSelectedItem[i].Name">@Model.TagSelectedItem[i].Name</a>
+                                            
+                                            }else{
+                                                <a href="/blog/category?categoryName=@Model.TagSelectedItem[i].Name">@Model.TagSelectedItem[i].Name,</a>
+                                    
+                                            }
+                                        }
+                                    }
+
+                                </p>
+                                }
+                                <p>@item.Abstract</p>
+                                <a class="button" href="/blog/details/@item.Id?pId=@item.preArticleId&nId=@item.nextArticleId">Read More <i class="ti-arrow-right"></i></a>
+                            </div>
+                        </div>
+
+
+                    }
+                    <div class="row">
+                        <div class="col-lg-12">
+
+                            @await Component.InvokeAsync("Pagination")
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Start Blog Post Siddebar -->
+                <div class="col-lg-4 sidebar-widgets">
+                    <div class="widget-wrap">
+
+
+                        <partial name="../Tuple/_SearchBar.cshtml" />
+
+                        @if (Model.Calendars != null && Model.Calendars.Count > 0)
+                        {
+                            @*@Html.Partial("../Tuple/_SidebarCalendar", Model)*@
+                            @await Html.PartialAsync("../Tuple/_SidebarCalendar", Model)
+                        }
+
+                        @if (Model.Tags != null && Model.Tags.Count > 0)
+                        {
+                            @*@Html.Partial("../Tuple/_SidebarTag", Model.Tags)*@
+                            @await Html.PartialAsync("../Tuple/_SidebarTag", Model)
+                        }
+                    </div>
+                </div>
+            </div>
+            <!-- End Blog Post Siddebar -->
+        </div>
+    </section>
+    <!--================ End Blog Post Area =================-->
+</main>
+
+

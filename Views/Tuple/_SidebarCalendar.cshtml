@@ -1,0 +1,32 @@
+﻿@model CrownBlog.Models.ViewModel.ArticleModel
+
+<div class="single-sidebar-widget post-category-widget">
+    <h4 class="single-sidebar-widget__title">Calendar</h4>
+
+    <div id="jstree">
+        <!-- in this example the tree is populated from inline HTML -->
+        <ul class="cat-list mt-20">
+            @foreach (int itemYear in Model.Years)
+            {
+            <li>
+
+                <a href="/blog/category?year=@itemYear">@itemYear</a>
+
+                @foreach (var dateItem in Model.Calendars)
+                {
+                @if(itemYear == dateItem.Year)
+                {
+                <ul>
+                    <li><a href="/blog/category?year=@dateItem.Year&month=@dateItem.Month">@dateItem.DisplayDate</a></li>
+                </ul>
+                    }
+                }
+            </li>
+                }
+
+        </ul>
+    </div>
+</div>
+
+
+

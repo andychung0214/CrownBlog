@@ -1,0 +1,11 @@
+﻿<div class="single-sidebar-widget newsletter-widget">
+    <h4 class="single-sidebar-widget__title">Search Article</h4>
+
+    <form asp-action="Index" method="get">
+        <div class="form-actions no-color">
+            <input type="text" class="form-control" name="SearchString" value="@ViewData["CurrentFilter"]" placeholder="Enter Keyword" />
+            <input type="submit" class="btn btn-outline-success" value="Search" />
+        </div>
+    </form>
+    
+</div>

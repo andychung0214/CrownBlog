@@ -1,0 +1,200 @@
+﻿
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>A & M Blog</title>
+    <link rel="icon" href="https://andychung0214.synology.me/images/icon/Fevicon.png" type="image/png">
+
+    <link rel="stylesheet" href="https://andychung0214.synology.me/lib/bootstrap/4.5.3/css/bootstrap.min.css">
+    @*<link rel="stylesheet" href="https://andychung0214.synology.me/lib/bootstrap/3.4.1/css/bootstrap.min.css" />*@
+
+    <link rel="stylesheet" href="/css/fontawesome/all.min.css">
+    <link rel="stylesheet" href="/css/themify-icons/themify-icons.css">
+    <link rel="stylesheet" href="/css/linericon/style.css">
+    <link rel="stylesheet" href="/css/owl-carousel/owl.theme.default.min.css">
+    <link rel="stylesheet" href="/css/owl-carousel/owl.carousel.min.css">
+
+
+    <link rel="stylesheet" href="https://andychung0214.synology.me/lib/jQueryUI/jquery-ui-1.12.1.custom/jquery-ui.theme.min.css">
+    <link rel="stylesheet" href="https://andychung0214.synology.me/lib/jQueryUI/jquery-ui-1.12.1.custom/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://andychung0214.synology.me/lib/jquery-timepicker/jquery.timepicker.min.css">
+
+
+
+    @RenderSection("Css", required: false)
+
+
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        #main {
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script src="https://andychung0214.synology.me/lib/jQuery/jquery-3.5.1.min.js"></script>
+
+    <!--jAlert-->
+    <link rel="stylesheet" href="https://andychung0214.synology.me/lib/jAlert/jAlert.css">
+    <script type="text/javascript" src="https://andychung0214.synology.me/lib/jAlert/jAlert.min.js"></script>
+    <script type="text/javascript" src="https://andychung0214.synology.me/lib/jAlert/jAlert-functions.min.js"></script>
+
+    @RenderSection("HeaderScripts", required: false)
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FQXK0N4LXN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-FQXK0N4LXN');
+    </script>
+</head>
+<body>
+    <!--================Header Menu Area =================-->
+
+
+    <a id="aEdit" href='#' class='btn btn-small btn-primary jtheme2' style="display:none;">dark_green</a>
+    <a id="aError" href='#' class='btn btn-small btn-primary jtheme2' style="display:none;">dark_red</a>
+    <a id="aCreate" href='#' class='btn btn-small btn-primary jtheme2' style="display:none;">yellow</a>
+
+
+    @RenderBody()
+
+    <script>
+        $('#aEdit').on('click', function (e) {
+            //$(this).show();
+            e.preventDefault();
+            var btn = $(this),
+                theme = btn.text();
+
+            $.jAlert({
+                'title': 'Edit Alert',
+                'content': 'Edit Article Done.',
+                'theme': theme,
+                'closeOnClick': true
+            });
+            return false;
+        });
+
+        $('#aCreate').on('click', function (e) {
+            //$(this).show();
+            e.preventDefault();
+            var btn = $(this),
+                theme = btn.text();
+
+            $.jAlert({
+                'title': 'Creat Alert',
+                'content': 'Create Article Done.',
+                'theme': theme,
+                'closeOnClick': true
+            });
+            return false;
+        });
+
+        $('#aError').on('click', function (e) {
+            //$(this).show();
+            e.preventDefault();
+            var btn = $(this),
+                theme = btn.text();
+
+            $.jAlert({
+                'title': 'Error Alert',
+                'content': 'Action Error.',
+                'theme': theme,
+                'closeOnClick': true
+            });
+            return false;
+        });
+    </script>
+
+    <!--================ Start Footer Area =================-->
+
+    @Html.Partial("~/Views/Shared/_Footer.cshtml")
+
+    <!--================ End Footer Area =================-->
+
+    <script src="https://andychung0214.synology.me/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="https://andychung0214.synology.me/lib/owl-carousel/owl.carousel.min.js"></script>
+    <script src="https://andychung0214.synology.me/js/blog/jquery.ajaxchimp.min.js"></script>
+
+    <script type="text/javascript">
+        
+
+        function SaveArticle(status, articleData) {
+            if (articleData != null) {
+                var isUpdate = status == "Update" ? true : false;
+            }
+
+            $.ajax({
+                type: isUpdate ? "PUT" : "POST",
+                url: "/api/web/article" + (isUpdate ? "/" + articleData.id : ""),
+                data: articleData
+            }).done(function (res) {
+                if (status == "Create") {
+                    articleData.id = res.id;
+                    articleData.CreatedDate = res.CreatedDate;
+                    articleData.ModifyDate = res.ModifyDate;
+                }
+                if (isUpdate) {
+                    $('#aEdit').trigger('click');
+                } else {
+                    $('#aCreate').trigger('click');
+                }
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                console.log('Status: ' + jqXHR.status + ', Status Text: ' + jqXHR.textStatus + ', ResponseText' + jqXHR.responseText);
+                $('#aError').trigger('click');
+
+                //$('#btn-loading').hide();
+                //captchaObj.ReloadImage();
+
+            });
+        };
+
+        function _uuid() {
+            var d = Date.now();
+            if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+                d += performance.now(); //use high-precision timer if available
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = (d + Math.random() * 16) % 16 | 0;
+                d = Math.floor(d / 16);
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+
+
+
+        function convertToStatus(status) {
+            var outputStatus = "";
+            switch (status) {
+                case 1:
+                    outputStatus = "Enable";
+                    break;
+                case 0:
+                    outputStatus = "Disable";
+                    break;
+                default:
+                    outputStatus = "Disable";
+            }
+            return outputStatus;
+        }
+    </script>
+
+
+
+
+
+    @*<script type="text/javascript" src="https://andychung0214.synology.me/lib/bootstrap/bootstrap-treeview.js"></script>*@
+
+    <link rel="stylesheet" href="https://andychung0214.synology.me/lib/jstree/dist/themes/default/style.min.css">
+    <script type="text/javascript" src="https://andychung0214.synology.me/lib/jstree/dist/jstree.min.js"></script>
+
+    <script type="text/javascript" src="https://andychung0214.synology.me/lib/jquery-timepicker/jquery.timepicker.min.js"></script>
+    <script type="text/javascript" src="https://andychung0214.synology.me/lib/jQueryUI/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+
+    @RenderSection("Scripts", required: false)
+
+    <script type="text/javascript" src="/js/main.js"></script>
+
+</body>
