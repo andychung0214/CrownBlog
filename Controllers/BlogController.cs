@@ -92,18 +92,25 @@ namespace CrownBlog.Controllers
                 PaginatedList<BlogArticle> paginatedList = await PaginatedList<BlogArticle>.CreateAsync(filterArticles, pageNumber ?? 1, pageSize);
                 List<ArticleModel> dbArticles = new List<ArticleModel>();
 
-                foreach (var item in paginatedList)
+                for (int Idx = 0; Idx < paginatedList.Count; Idx++)
                 {
                     dbArticles.Add(new ArticleModel()
                     {
-                        Id = item.Id,
-                        Title = item.Title,
-                        Description = item.Description,
-                        BannerUrl = item.BannerUrl,
-                        Abstract = item.Abstract == null ? "": item.Abstract,
-                        CreateDate = item.CreateDate.GetValueOrDefault(),
-                        ModifyDate = item.ModifyDate.GetValueOrDefault(),
-                        TagName = BlogService.Get_Tags_By(item.Id).Select(o => o.Name).FirstOrDefault()
+                        Id = paginatedList[Idx].Id,
+                        Title = paginatedList[Idx].Title,
+                        Description = paginatedList[Idx].Description,
+                        BannerUrl = paginatedList[Idx].BannerUrl,
+                        Abstract = paginatedList[Idx].Abstract == null ? "" : paginatedList[Idx].Abstract,
+                        CreateDate = paginatedList[Idx].CreateDate.GetValueOrDefault(),
+                        ModifyDate = paginatedList[Idx].ModifyDate.GetValueOrDefault(),
+                        TagName = BlogService.Get_Tags_By(paginatedList[Idx].Id).Select(o => o.Name).FirstOrDefault(),
+                        preArticleId = Idx != 0 ? paginatedList[Idx - 1].Id : new Guid(),
+                        preArticleTitle = Idx != 0 ? paginatedList[Idx - 1].Title : string.Empty,
+                        nextArticleId = Idx < paginatedList.Count - 1 ? paginatedList[Idx + 1].Id : new Guid(),
+                        nextArticleTitle = Idx < paginatedList.Count - 1 ? paginatedList[Idx + 1].Title : string.Empty,
+                        preArticleBannerURL = Idx != 0 ? paginatedList[Idx - 1].BannerUrl : string.Empty,
+                        nextArticleBannerURL = Idx < paginatedList.Count - 1 ? paginatedList[Idx + 1].BannerUrl : string.Empty,
+
                     });
 
                     vm.ArticleModels = dbArticles;
@@ -112,7 +119,7 @@ namespace CrownBlog.Controllers
                     vm.Tags = tags;
                     vm.TopArticles = ConvertArticleEntitiesToModels(topArticles.ToList());
 
-                    List<BlogTag> blogTags = BlogService.GetAllTagsBy(item.Id);
+                    List<BlogTag> blogTags = BlogService.GetAllTagsBy(paginatedList[Idx].Id);
                     List<TagItem> displayTags = new List<TagItem>();
 
                     foreach (var exitTagItem in blogTags)
@@ -129,7 +136,6 @@ namespace CrownBlog.Controllers
 
                     vm.TagSelectedItem = displayTags;
                 }
-
 
                 ViewBag.TotalPageCount = (tmpTotalCount / pageSize) + (tmpTotalCount % pageSize == 0 ? 0 : 1);
 

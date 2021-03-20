@@ -32,6 +32,9 @@ namespace CrownBlog.Models.ViewModel
         public Guid preArticleId { get; set; }
         public Guid nextArticleId { get; set; }
 
+        public string preArticleBannerURL { get; set; }
+        public string nextArticleBannerURL { get; set; }
+
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
         public int PageCount { get; set; }

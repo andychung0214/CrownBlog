@@ -2,6 +2,7 @@
 using CrownBlog.BLL;
 using CrownBlog.DAL;
 using CrownBlog.Models.ViewModel;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace CrownBlog.Controllers
 {
+    [EnableCors("CorsPolicy")]
     [Route("api/web")]
     public class WebsiteApiController : BaseController
     {

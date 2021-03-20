@@ -64,6 +64,22 @@ namespace CrownBlog
 
             #endregion
 
+            #region Cors
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", builder =>
+                {
+                    builder.WithOrigins("https://localhost:44395/").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                });
+                options.AddPolicy("CorsPolicy", builder =>
+                {
+                    builder.WithOrigins("https://www.crownchung.tw/").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                });
+            });
+
+            #endregion
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -83,6 +99,8 @@ namespace CrownBlog
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthorization();
 

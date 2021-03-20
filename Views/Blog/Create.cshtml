@@ -25,7 +25,13 @@
 
 
 @section Scripts{
-
+    <script>
+        CKEDITOR.plugins.addExternal("codesnippet", "https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.7.3/plugins/codesnippet/plugin.js", "");
+        CKEDITOR.replace("formDesc", {
+            extraPlugins: "codesnippet",
+            codeSnippet_theme: "solarized_dark"
+        });
+    </script>
 
     <script type="text/javascript">
 
@@ -162,10 +168,10 @@
 
             <div class="form-group">
                 <label for="datepicker">Date:</label>
-                <input id="datepicker" type="text" class="datepicker" >
+                <input id="datepicker" type="text" class="datepicker">
 
                 <label for="timespan">Time:</label>
-                <input id="timespan"  type="text" class="timepicker">
+                <input id="timespan" type="text" class="timepicker">
 
                 @*<label for="formDate">Date</label>
                     <input id="formDate" ref="formDate" type="date" class="form-control" />*@
@@ -175,19 +181,20 @@
                 <label for="formTags">Tags:</label>
                 <fieldset>
                     <div id="defaultTag">
-                        @if(Model.Tags != null && Model.Tags.Count >= 0){
-                                var tagIndex = 0;
+                        @if (Model.Tags != null && Model.Tags.Count >= 0)
+                        {
+                            var tagIndex = 0;
 
-                            @foreach(var tagItem in Model.Tags)
+                            @foreach (var tagItem in Model.Tags)
                             {
 
-                                <input id="cb-@tagIndex" type="checkbox" value="@tagItem.Name" name="SelectedTags"> 
+                                <input id="cb-@tagIndex" type="checkbox" value="@tagItem.Name" name="SelectedTags">
                                 <label for="cb-@tagIndex">@tagItem.Name</label>
                             }
-                                tagIndex += 1;
+                            tagIndex += 1;
 
                         }
-                    </div> 
+                    </div>
                 </fieldset>
                 <input id="txtCreateTag" type="text" placeholder="Enter Tag Name" />
                 <button id="btnCreateTag" class="btn btn-success" type="button">Create Tag</button>
@@ -206,7 +213,7 @@
             </div>
 
             @*<div>@CrownResources.GetResource("Sensive", "FormSubmit")</div>*@
-            <input id="btnSubmit"  type="submit" class="btn btn-success" value="Submit" />
+            <input id="btnSubmit" type="submit" class="btn btn-success" value="Submit" />
             <a class="btn btn-success" href="/blog/index">Back to List</a>
         </form>
 

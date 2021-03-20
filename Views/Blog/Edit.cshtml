@@ -22,11 +22,19 @@
         window.articleId = "@ViewBag.articleId";
     </script>
     <script src="https://andychung0214.synology.me/lib/ckeditor/ckeditor.js"></script>
+
     <script src="https://andychung0214.synology.me/lib/ckeditor/config.js"></script>
 }
 
 @section Scripts{
 
+    <script>
+        CKEDITOR.plugins.addExternal("codesnippet", "https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.7.3/plugins/codesnippet/plugin.js", "");
+        CKEDITOR.replace("formDesc", {
+            extraPlugins: "codesnippet",
+            codeSnippet_theme: "solarized_dark"
+        });
+    </script>
     <script type="text/javascript">
 
         function getSelectedTag() {
