@@ -133,7 +133,7 @@ namespace CrownBlog.BLL
         {
             IQueryable<BlogArticle> articles = from m in BlogContext.BlogArticles
                                                orderby m.CreateDate
-                                               where m.CreateDate.Value.Year == 2020 && m.CreateDate.Value.Month == 10
+                                               where m.Focus.Value
                                                select m;
 
             return articles;
@@ -316,11 +316,19 @@ namespace CrownBlog.BLL
                                     .Where(o => o.Id == pId)
                                     .Select(o => o.Title)
                                     .FirstOrDefault(),
+                    preArticleBannerURL = BlogContext.BlogArticles
+                                            .Where(o => o.Id == pId)
+                                            .Select(o => o.BannerUrl)
+                                    .FirstOrDefault(),
                     nextArticleId = nId,
                     nextArticleTitle = BlogContext.BlogArticles
                                     .Where(o => o.Id == nId)
                                     .Select(o => o.Title)
                                     .FirstOrDefault(),
+                    nextArticleBannerURL = BlogContext.BlogArticles
+                                            .Where(o => o.Id == nId)
+                                            .Select(o => o.BannerUrl)
+                                            .FirstOrDefault(),
                 };
 
             }

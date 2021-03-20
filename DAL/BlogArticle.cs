@@ -19,5 +19,7 @@ namespace CrownBlog.DAL
         public int? Visitors { get; set; }
         public string BannerUrl { get; set; }
         public string IconUrl { get; set; }
+        public bool? Focus { get; set; }
+
     }
 }
