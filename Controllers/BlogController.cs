@@ -13,7 +13,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CrownBlog.Filters;
 
-using Synology.Interfaces;
 using CrownBlog.Models;
 
 namespace CrownBlog.Controllers
@@ -29,6 +28,8 @@ namespace CrownBlog.Controllers
         /// </summary>
         IMapper Mapper { get; }
 
+        IConfiguration _configuration;
+
         private readonly IServiceProvider _serviceProvider;
 
         [Obsolete]
@@ -37,6 +38,7 @@ namespace CrownBlog.Controllers
             BlogService = new BlogService(blogContext, configuration, null, mapper);
             _context = blogContext;
             _serviceProvider = serviceProvider;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> Index(string searchString, string currentFilter, string keyword, int id, string sortOrder, int? pageNumber, int pageSize = 0)
@@ -256,27 +258,106 @@ namespace CrownBlog.Controllers
 
         public IActionResult Album()
         {
-            return View();
+            PhotoAlbumModel vm = new PhotoAlbumModel();
+
+
+
+            return View(vm);
         }
 
         [Route("/blog/album/details/{id}")]
         public async Task<IActionResult> AlbumDetails(Guid id)
         {
+            PhotoAlbumModel vm = new PhotoAlbumModel();
+
+
             if (id == Guid.Empty)
             {
-                id = new Guid();
+                return RedirectPermanent("/blog/album/");
+            }
+            else
+            {
+                ViewBag.AlbumId = id.ToString();
+                vm.Gallerys = new List<GalleryItem>();
+                vm.Gallerys = GetGallerysById(id);
+                if (id == Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2"))
+                {
+                    vm.Title = "四極點大環島";
+                }
             }
 
-            ViewBag.AlbumId = id.ToString();
+            ////{Config["Synology:User"]}
+            //var session = new SynologySession(new Uri($"{ _configuration["Synology:User"] }"));
+            //session.Login();
+            //var api = new SynologyApi(session);
 
-            //var settings = _serviceProvider.GetService<ISynologyConnectionSettings>();
+            //session.LogOut();
 
-            //using (var syno = _serviceProvider.GetService<ISynologyConnection>())
-            //{
-            //    var result = await syno
-            //}
+            return View(vm);
+        }
 
-            return View();
+        private List<GalleryItem> GetGallerysById(Guid id)
+        {
+            List<GalleryItem> galleries = new List<GalleryItem>();
+            if (id == Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2"))
+            {
+                galleries.Add(new GalleryItem
+                {
+                    Title = "富貴角燈塔",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0604.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0604.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "富貴角燈塔2",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0608.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0608.JPG"
+                });
+                galleries.Add(new GalleryItem
+                {
+                    Title = "三貂嶺燈塔",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/DSC_0627.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/DSC_0627.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "三貂嶺燈塔2",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/IMG_8192.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/IMG_8192.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "國聖燈塔",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0822.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0822.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "國聖燈塔2",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0823.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0823.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "鵝鑾鼻燈塔",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/IMG_8408.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/IMG_8408.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "鵝鑾鼻燈塔2",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/DSC_0791.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/DSC_0791.JPG"
+                });
+            }
+
+            return galleries;
         }
 
         public IActionResult Contact()

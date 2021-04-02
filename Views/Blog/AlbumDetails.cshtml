@@ -1,1 +1,59 @@
-﻿<h1>Album Details</h1>
+﻿@model CrownBlog.Models.ViewModel.PhotoAlbumModel
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_LayoutBlog.cshtml";
+}
+
+@section Css{
+    <link rel="stylesheet" href="~/css/color-box/colorbox.css" />
+}
+
+
+@section HeaderScripts{
+    <script type="text/javascript" src="~/js/color-box/jquery.colorbox.js"></script>
+}
+
+@section Scripts{
+    <script>
+        $(".photo-item").colorbox({
+            maxWidth: '970px',
+            maxHeight: '95%',
+            rel: 'gallery-item'
+        })
+    </script>
+}
+
+<partial name="../Shared/_Header.cshtml" />
+
+
+<main id="main" class="site-main">
+    <partial name="../Shared/_Banner.cshtml" />
+    <div class="album py-5 bg-light">
+        <div class="container">
+            <h1 style="align">@Model.Title</h1>
+
+            <div class="row">
+                @if (Model.Gallerys != null && Model.Gallerys.Count > 0)
+                {
+                    foreach (var item in Model.Gallerys)
+                    {
+                        <div class="col-md-3">
+                            <div class="card mb-4 box-shadow">
+                                <a class="photo-item" href=@item.ImgUrl alt="">
+                                    <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&amp;bg=55595c&amp;fg=eceeef&amp;text=Thumbnail" alt="Thumbnail [100%x225]" style="height: 225px; width: 100%; display: block;"
+                                         src=@item.ThumbImgUrl data-holder-rendered="true">
+                                </a>
+                                <div class="card-body">
+                                    <p class="card-text">@item.Title</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+
+            </div>
+        </div>
+    </div>
+
+</main>
