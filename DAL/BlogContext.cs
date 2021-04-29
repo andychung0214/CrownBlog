@@ -22,14 +22,10 @@ namespace CrownBlog.DAL
         public virtual DbSet<BlogMessage> BlogMessages { get; set; }
         public virtual DbSet<BlogTag> BlogTags { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=tcp:andychung0214.synology.me,1433;initial catalog=CrownBlogDB;User Id=sa;Password=Abcd1234;");
-            }
-        }
+        public virtual DbSet<Account> Accounts { get; set; }
+        public virtual DbSet<Member> Members { get; set; }
+
+        public virtual DbSet<MultiLanguage> MultiLanguages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -122,6 +118,72 @@ namespace CrownBlog.DAL
                 entity.Property(e => e.Description).HasMaxLength(2048);
 
                 entity.Property(e => e.Name).HasMaxLength(2048);
+            });
+
+            modelBuilder.Entity<Account>(entity =>
+            {
+                entity.ToTable("Account");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(64);
+
+                entity.Property(e => e.Password)
+                    .IsRequired()
+                    .HasMaxLength(256);
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(64);
+            });
+
+            modelBuilder.Entity<Member>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Account)
+                    .IsRequired()
+                    .HasMaxLength(64);
+
+                entity.Property(e => e.AuthCode)
+                    .IsRequired()
+                    .HasMaxLength(10)
+                    .IsFixedLength(true);
+
+                entity.Property(e => e.Email).HasMaxLength(200);
+
+                entity.Property(e => e.Name).HasMaxLength(64);
+
+                entity.Property(e => e.Password)
+                    .IsRequired()
+                    .HasMaxLength(64);
+            });
+
+            modelBuilder.Entity<MultiLanguage>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToTable("MultiLanguage");
+
+                entity.Property(e => e.CreateDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreateUser).HasMaxLength(64);
+
+                entity.Property(e => e.Keyword)
+                    .IsRequired()
+                    .HasMaxLength(24);
+
+                entity.Property(e => e.Lang)
+                    .IsRequired()
+                    .HasMaxLength(24)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Project)
+                    .IsRequired()
+                    .HasMaxLength(24);
+
+                entity.Property(e => e.Value).IsRequired();
             });
 
             OnModelCreatingPartial(modelBuilder);

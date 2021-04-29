@@ -15,6 +15,41 @@
         .detials h4 {
             white-space: nowrap;
         }
+        .comment-form .form-control{
+            text-transform: none !important;
+        }
+
+        pre {
+            display: block;
+            padding: 9.5px;
+            margin: 0 0 10px;
+            font-size: 13px;
+            line-height: 1.428571429;
+            color: #333;
+            word-break: break-all;
+            word-wrap: break-word;
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .language-cs {
+            display: block;
+            overflow-x: auto;
+            padding: 0.5em;
+            background: white;
+            color: black;
+        }
+
+        pre code {
+            font-size: inherit;
+            white-space: pre-wrap;
+            border-radius: 0;
+        }
+
+        code, kbd, pre, samp {
+            font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+        }
     </style>
 }
 
@@ -31,7 +66,36 @@
 }
 
 @section Scripts{
-    @*<script src="~/js/blog/vue-detail.js"></script>*@
+    <script type="text/javascript">
+        $('#formAddMessage').on('submit', function (event) {
+
+            var messageId = _uuid();
+
+            var messageData = {
+                MessageId: messageId,
+                ArticleId: '@ViewBag.articleId',
+                Name: $('#name').val(),
+                Subject: $('#subject').val(),
+                CreateDate: new Date().toISOString()
+            };
+            debugger
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "/api/web/message/",
+                data: messageData
+            }).done(function (res) {
+                $('#aCreate').trigger('click');
+
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                console.log('Status: ' + jqXHR.status + ', Status Text: ' + jqXHR.textStatus + ', ResponseText' + jqXHR.responseText);
+                $('#aError').trigger('click');
+
+            });
+            event.preventDefault();
+
+        });
+    </script>
 
 }
 
@@ -238,7 +302,7 @@
                 </div>
                 <div class="comment-form">
                     <h4>Leave a Reply</h4>
-                    <form>
+                    <form id="formAddMessage">
                         <div class="form-group form-inline">
                             <div class="form-group col-lg-6 col-md-6 name">
                                 <input type="text" class="form-control" id="name" ref="formCommentName" placeholder="Enter Name" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Name'">
@@ -253,7 +317,9 @@
                         <div class="form-group">
                             <textarea class="form-control mb-10" rows="5" name="message" ref="formCommentMessage" placeholder="Messege" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Messege'" required=""></textarea>
                         </div>
-                        <a href="#" @@click.prevent="submitCreateMessage" class="button submit_btn">Post Comment</a>
+                        @*<a id="postComment" class="button submit_btn">Post Comment</a>*@
+                        <input id="btnSubmit" type="submit" class="btn btn-success" value="Post Comment" />
+
                     </form>
                 </div>
             </div>

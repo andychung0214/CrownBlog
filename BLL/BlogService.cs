@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace CrownBlog.BLL
@@ -127,6 +128,25 @@ namespace CrownBlog.BLL
                                                     select m;
 
             return articles;
+        }
+
+        public List<ArticleModel> GetTotalArticles()
+        {
+            IQueryable<BlogArticle> articles = from m in BlogContext.BlogArticles
+                                               orderby m.CreateDate descending
+                                               select m;
+
+            List<ArticleModel> totalArticles = new List<ArticleModel>();
+
+            foreach (var item in articles)
+            {
+                var temp = Mapper.Map<ArticleModel>(item);
+                ArticleModel articleModel = temp;
+                totalArticles.Add(articleModel);
+            }
+
+
+            return totalArticles;
         }
 
         public IQueryable<BlogArticle> GetTopArticles()
@@ -302,34 +322,42 @@ namespace CrownBlog.BLL
                                     .FirstOrDefault();
             if (entity != null)
             {
-                article = new ArticleModel()
+                try
                 {
-                    Id = entity.Id,
-                    Title = entity.Title,
-                    Description = entity.Description,
-                    CreateDate = entity.CreateDate,
-                    BannerUrl = entity.BannerUrl,
-                    Abstract = entity.Abstract,
-                    Status = entity.Status,
-                    preArticleId = pId,
-                    preArticleTitle = BlogContext.BlogArticles
-                                    .Where(o => o.Id == pId)
-                                    .Select(o => o.Title)
-                                    .FirstOrDefault(),
-                    preArticleBannerURL = BlogContext.BlogArticles
-                                            .Where(o => o.Id == pId)
-                                            .Select(o => o.BannerUrl)
-                                    .FirstOrDefault(),
-                    nextArticleId = nId,
-                    nextArticleTitle = BlogContext.BlogArticles
-                                    .Where(o => o.Id == nId)
-                                    .Select(o => o.Title)
-                                    .FirstOrDefault(),
-                    nextArticleBannerURL = BlogContext.BlogArticles
-                                            .Where(o => o.Id == nId)
-                                            .Select(o => o.BannerUrl)
-                                            .FirstOrDefault(),
-                };
+                    article = new ArticleModel()
+                    {
+                        Id = entity.Id,
+                        Title = entity.Title,
+                        Description = entity.Description,
+                        CreateDate = entity.CreateDate,
+                        BannerUrl = entity.BannerUrl,
+                        Abstract = entity.Abstract,
+                        Status = entity.Status,
+                        Focus = entity.Focus.GetValueOrDefault(),
+                        preArticleId = pId,
+                        preArticleTitle = BlogContext.BlogArticles
+                                        .Where(o => o.Id == pId)
+                                        .Select(o => o.Title)
+                                        .FirstOrDefault(),
+                        preArticleBannerURL = BlogContext.BlogArticles
+                                                .Where(o => o.Id == pId)
+                                                .Select(o => o.BannerUrl)
+                                        .FirstOrDefault(),
+                        nextArticleId = nId,
+                        nextArticleTitle = BlogContext.BlogArticles
+                                        .Where(o => o.Id == nId)
+                                        .Select(o => o.Title)
+                                        .FirstOrDefault(),
+                        nextArticleBannerURL = BlogContext.BlogArticles
+                                                .Where(o => o.Id == nId)
+                                                .Select(o => o.BannerUrl)
+                                                .FirstOrDefault(),
+                    };
+                }
+                catch (Exception ex)
+                {
+                    return new ArticleModel();
+                }
 
             }
 
@@ -461,7 +489,7 @@ namespace CrownBlog.BLL
 
         #region BlogArticle
 
-        public async Task<BlogArticle> CreateArticle(ArticleRequestBody articleInfo)
+        public HttpResponseMessage CreateArticle(HttpResponseMessage response, ArticleRequestBody articleInfo)
         {
             //var article = new BlogArticle
             //{
@@ -476,15 +504,14 @@ namespace CrownBlog.BLL
             try
             {
                 BlogContext.BlogArticles.Add(article);
-                await BlogContext.SaveChangesAsync();
+                BlogContext.SaveChangesAsync();
             }
             catch (Exception ex)
             {
 
                 throw;
             }
-
-            return article;
+            return response;
         }
 
         public async Task UpdateArticle(Guid articleId, ArticleRequestBody articleInfo)
@@ -645,6 +672,92 @@ namespace CrownBlog.BLL
             }
         }
 
+        #endregion
+
+        #region Member
+
+        public async Task<List<MemberModel>> GetMembersAsync()
+        {
+            List<MemberModel> Members = new List<MemberModel>();
+
+            var MemberEntities = BlogContext.Members.ToList();
+
+            foreach (var memberItem in MemberEntities)
+            {
+                var memberModel = Mapper.Map<MemberModel>(memberItem);
+                Members.Add(memberModel);
+            }
+
+            return Members;
+        }
+
+        public async Task<Member> CreateMember(MemberRequestBody memberInfo)
+        {
+            var memberEntity = Mapper.Map<Member>(memberInfo);
+
+            try
+            {
+                BlogContext.Members.Add(memberEntity);
+                await BlogContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return memberEntity;
+        }
+
+
+        #endregion
+
+        #region Message
+        public List<BlogMessage> Get_All_Messages_By(Guid Id)
+        {
+            List<BlogMessage> messages = new List<BlogMessage>();
+
+            var messageEntities = from m in BlogContext.BlogMessages
+                                where m.ArticleId == Id
+                                select m;
+
+            foreach (BlogMessage item in messageEntities)
+            {
+                messages.Add(item);
+            }
+
+            return messages;
+        }
+
+        public async Task<BlogMessage> CreateMessage(MessageRequestBody messageInfo)
+        {
+            var messageEntity = Mapper.Map<BlogMessage>(messageInfo);
+
+            try
+            {
+                BlogContext.BlogMessages.Add(messageEntity);
+                await BlogContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return messageEntity;
+        }
+        #endregion
+
+        #region MultiLanguage
+        public MultiLanguage Get_MultiLanguage_By(string project, string keyword, string lang)
+        {
+            MultiLanguage entity = null;
+
+            if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(keyword) && !string.IsNullOrEmpty(lang))
+            {
+                entity = BlogContext.MultiLanguages.Where(r => r.Project == project && r.Keyword == keyword && r.Lang == lang).FirstOrDefault();
+            }
+
+            return entity;
+        }
         #endregion
 
     }

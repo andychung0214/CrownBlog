@@ -26,8 +26,8 @@ namespace CrownBlog.TokenAuthentication
         {
             if (!string.IsNullOrWhiteSpace(userName) &&
                 !string.IsNullOrWhiteSpace(password) &&
-                userName.ToLower() == "admin" && 
-                password == "password")
+                userName == "amTea" && 
+                password == "02141012")
             {
                 return true;
             }

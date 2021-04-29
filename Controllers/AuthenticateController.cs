@@ -27,7 +27,7 @@ namespace CrownBlog.Controllers
             }
             else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponseVM() { errorno = 500, message = "Fail Auth" });
+                return StatusCode(StatusCodes.Status403Forbidden, new ErrorResponseVM() { errorno = 403, message = "Fail Auth" });
             }
 
         }

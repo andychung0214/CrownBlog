@@ -124,6 +124,8 @@ namespace CrownBlog.Controllers
             try
             {
                 HttpResponseMessage response = new HttpResponseMessage();
+                requestBody.CreateDate = System.DateTime.Now;
+                requestBody.Focus = false;
                 HttpResponseMessage article = BlogService.CreateArticle(response, requestBody);
 
                 if (requestBody.TagSelectedStrings != null)
@@ -139,7 +141,7 @@ namespace CrownBlog.Controllers
                         tagRequestBody.TagId = Guid.NewGuid();
                         tagRequestBody.Name = tagItemName;
                         tagRequestBody.ArticleId = requestBody.Id;
-
+                        tagRequestBody.Status = 0;
                         BlogService.CreateTag(tagRequestBody);
                     }
                 }
@@ -165,7 +167,7 @@ namespace CrownBlog.Controllers
 
             try
             {
-
+                requestBody.ModifyDate = System.DateTime.Now;
                 await BlogService.UpdateArticle(id, requestBody);
 
                 if (requestBody.TagSelectedStrings != null)
@@ -267,7 +269,7 @@ namespace CrownBlog.Controllers
 
         [HttpPost]
         [Route("message")]
-        [TypeFilter(typeof(AuthFilter))]
+        [TokenAuthenticationFilter]
         public async Task<ActionResult> CreateMessage(MessageRequestBody requestBody)
         {
             if (requestBody == null || !ModelState.IsValid)
@@ -282,6 +284,8 @@ namespace CrownBlog.Controllers
                 {
                     requestBody.ArticleId = requestBody.ArticleId;
                 }
+
+                requestBody.CreateDate = System.DateTime.Now;
                 BlogMessage user = await BlogService.CreateMessage(requestBody);
 
                 return Ok($"Create Message ID Message done.");
@@ -358,7 +362,7 @@ namespace CrownBlog.Controllers
         }
 
         [HttpPost]
-        [TypeFilter(typeof(TokenAuthenticationFilter))]
+        [TokenAuthenticationFilter]
         [Route("member")]
         public async Task<ActionResult> CreateUser([FromBody] MemberRequestBody requestBody)
         {
@@ -406,6 +410,7 @@ namespace CrownBlog.Controllers
 
             try
             {
+                requestBody.ModifyDate = System.DateTime.Now;
                 await BlogService.UpdateArticle(id, requestBody);
 
                 if (requestBody.TagSelectedStrings != null)

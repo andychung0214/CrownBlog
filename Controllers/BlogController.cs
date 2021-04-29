@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using CrownBlog.Filters;
 
 using CrownBlog.Models;
+using System.Drawing;
 
 namespace CrownBlog.Controllers
 {
@@ -22,6 +23,9 @@ namespace CrownBlog.Controllers
         BlogService BlogService { get; }
 
         private readonly BlogContext _context;
+
+        private IHttpContextAccessor _httpContextAccessor { get; }
+
 
         /// <summary>
         /// AutoMapper
@@ -39,6 +43,8 @@ namespace CrownBlog.Controllers
             _context = blogContext;
             _serviceProvider = serviceProvider;
             _configuration = configuration;
+            Mapper = mapper;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<IActionResult> Index(string searchString, string currentFilter, string keyword, int id, string sortOrder, int? pageNumber, int pageSize = 0)
@@ -59,6 +65,7 @@ namespace CrownBlog.Controllers
             ViewBag.KeyWord = keyword;
             ViewBag.CurrentPageIndex = pageNumber <= 1 ? 1 : pageNumber;
             ViewBag.TotalPageCount = 1;
+            //ViewBag.IndexTranslation = GetResource
 
             ArticleModel vm = new ArticleModel();
             if (vm == null)
@@ -67,7 +74,7 @@ namespace CrownBlog.Controllers
             }
             else
             {
-                //vm.ArticleModels = BlogService.GetArticles(pageNumber, pageSize, searchString);
+                vm.ArticleModels = BlogService.GetArticles(pageNumber, pageSize, searchString);
                 //vm.Messages = BlogService.GetMessages();
                 //ArticleModel aa = BlogService.GetTags();
 
@@ -106,16 +113,23 @@ namespace CrownBlog.Controllers
                         CreateDate = paginatedList[Idx].CreateDate.GetValueOrDefault(),
                         ModifyDate = paginatedList[Idx].ModifyDate.GetValueOrDefault(),
                         TagName = BlogService.Get_Tags_By(paginatedList[Idx].Id).Select(o => o.Name).FirstOrDefault(),
-                        preArticleId = Idx != 0 ? paginatedList[Idx - 1].Id : new Guid(),
-                        preArticleTitle = Idx != 0 ? paginatedList[Idx - 1].Title : string.Empty,
-                        nextArticleId = Idx < paginatedList.Count - 1 ? paginatedList[Idx + 1].Id : new Guid(),
-                        nextArticleTitle = Idx < paginatedList.Count - 1 ? paginatedList[Idx + 1].Title : string.Empty,
-                        preArticleBannerURL = Idx != 0 ? paginatedList[Idx - 1].BannerUrl : string.Empty,
-                        nextArticleBannerURL = Idx < paginatedList.Count - 1 ? paginatedList[Idx + 1].BannerUrl : string.Empty,
 
                     });
 
                     vm.ArticleModels = dbArticles;
+                    //List<ArticleModel> totalArticles = BlogService.GetTotalArticles();
+                    //List<PreNextPageItem> pnPages = new List<PreNextPageItem>();
+                    //for (int idx = 0; idx < totalArticles.Count; idx++)
+                    //{
+                    //    PreNextPageItem item = new PreNextPageItem();
+                    //    item.MainArticleId = totalArticles[idx].Id;
+                    //    item.preArticleId = Idx != 0 ? totalArticles[Idx - 1].Id : new Guid();
+                    //    item.preArticleTitle = Idx != 0 ? totalArticles[Idx - 1].Title : string.Empty;
+                    //    item.nextArticleId = Idx < totalArticles.Count - 1 ? totalArticles[Idx + 1].Id : new Guid();
+                    //    item.nextArticleTitle = Idx < totalArticles.Count - 1 ? totalArticles[Idx + 1].Title : string.Empty;
+                    //    pnPages.Add(item);
+                    //}
+                    //vm.PNPages = pnPages;
                     vm.Calendars = ConvertDatesToModel(allArticles.ToList());
                     vm.Years = allArticles.Select(o => o.CreateDate.Value.Year).Distinct().ToList();
                     vm.Tags = tags;
@@ -163,6 +177,18 @@ namespace CrownBlog.Controllers
                 List<string> tagNames = blogTags.Select(o => o.Name).ToList();
                 vm.SelectedTags = tagNames;
 
+                List<BlogMessage> blogMessages = BlogService.Get_All_Messages_By(id);
+                List<MessageItem> messageModels = new List<MessageItem>();
+                foreach (var item in blogMessages)
+                {
+                    if (item.MessageId != Guid.Empty)
+                    {
+                        var messageMode = Mapper.Map<MessageItem>(item);
+                        messageModels.Add(messageMode);
+                    }
+                }
+                vm.Messages = messageModels;
+
                 return View(vm);
             }
         }
@@ -174,6 +200,9 @@ namespace CrownBlog.Controllers
 
             List<TagItem> tags = BlogService.GetAllTags();
             vm.Tags = tags;
+
+            //string token = "exampleToken";
+            //Response.Cookies.Append("CrownAuth", token, new CookieOptions() { HttpOnly = true, Expires = DateTime.Now.AddYears(100) });
 
 
             return View(vm);
@@ -260,13 +289,14 @@ namespace CrownBlog.Controllers
         {
             PhotoAlbumModel vm = new PhotoAlbumModel();
 
-
-
+            vm.AlbumList = GetAlbumList();
+            ViewBag.albumId = "3b3c1224-0311-44f0-8ec5-a64fe18ddec2";
             return View(vm);
         }
 
+
         [Route("/blog/album/details/{id}")]
-        public async Task<IActionResult> AlbumDetails(Guid id)
+        public async Task<IActionResult> AlbumDetails(Guid id, string albumTitle)
         {
             PhotoAlbumModel vm = new PhotoAlbumModel();
 
@@ -280,9 +310,9 @@ namespace CrownBlog.Controllers
                 ViewBag.AlbumId = id.ToString();
                 vm.Gallerys = new List<GalleryItem>();
                 vm.Gallerys = GetGallerysById(id);
-                if (id == Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2"))
+                if (!string.IsNullOrEmpty(albumTitle))
                 {
-                    vm.Title = "四極點大環島";
+                    vm.Title = albumTitle;
                 }
             }
 
@@ -296,69 +326,33 @@ namespace CrownBlog.Controllers
             return View(vm);
         }
 
-        private List<GalleryItem> GetGallerysById(Guid id)
+        public async Task<IActionResult> Gallery()
         {
-            List<GalleryItem> galleries = new List<GalleryItem>();
-            if (id == Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2"))
-            {
-                galleries.Add(new GalleryItem
-                {
-                    Title = "富貴角燈塔",
-                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0604.JPG",
-                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0604.JPG"
-                });
+            PhotoAlbumModel vm = new PhotoAlbumModel();
 
-                galleries.Add(new GalleryItem
-                {
-                    Title = "富貴角燈塔2",
-                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0608.JPG",
-                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0608.JPG"
-                });
-                galleries.Add(new GalleryItem
-                {
-                    Title = "三貂嶺燈塔",
-                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/DSC_0627.JPG",
-                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/DSC_0627.JPG"
-                });
+            //string fileName = featureImage.FilePath.Split(new string[] { "/cms/" }, StringSplitOptions.None)[1];
 
-                galleries.Add(new GalleryItem
-                {
-                    Title = "三貂嶺燈塔2",
-                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/IMG_8192.JPG",
-                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/IMG_8192.JPG"
-                });
+            System.IO.MemoryStream resizedImageStream;
+            System.Drawing.Bitmap resizedImage;
+            string imgExt = System.IO.Path.GetExtension("http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0604.JPG").ToLower();
 
-                galleries.Add(new GalleryItem
-                {
-                    Title = "國聖燈塔",
-                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0822.JPG",
-                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0822.JPG"
-                });
+            // Scale big feature image to medium
+            //blockBlob.Blob.Position = 0;
+            //System.Drawing.Image mediumImage = System.Drawing.Image.FromStream("http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0604.JPG");
+            System.Drawing.Image mediumImage = System.Drawing.Image.FromFile("http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0604.JPG");
+            //mediumFileFolder = string.Format("{0}/Video Featured Image Medium", featureImage.CmsID);
+            //mediumFileName = string.Format("video-featured-image-medium{0}", imgExt);
 
-                galleries.Add(new GalleryItem
-                {
-                    Title = "國聖燈塔2",
-                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0823.JPG",
-                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0823.JPG"
-                });
+            // Restore the medium image
+            resizedImageStream = new System.IO.MemoryStream();
+            resizedImage = ResizeImage(mediumImage, 768, 432);
+            resizedImage.Save(resizedImageStream, (imgExt == ".jpg") ? System.Drawing.Imaging.ImageFormat.Jpeg : System.Drawing.Imaging.ImageFormat.Png);
 
-                galleries.Add(new GalleryItem
-                {
-                    Title = "鵝鑾鼻燈塔",
-                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/IMG_8408.JPG",
-                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/IMG_8408.JPG"
-                });
 
-                galleries.Add(new GalleryItem
-                {
-                    Title = "鵝鑾鼻燈塔2",
-                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/DSC_0791.JPG",
-                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/DSC_0791.JPG"
-                });
-            }
+            return View(vm);
 
-            return galleries;
         }
+
 
         public IActionResult Contact()
         {
@@ -542,5 +536,254 @@ namespace CrownBlog.Controllers
 
 
 
+        private List<PhotoAlbumModel> GetAlbumList()
+        {
+            List<PhotoAlbumModel> albumeList = new List<PhotoAlbumModel>();
+
+            albumeList.Add(new PhotoAlbumModel()
+            {
+                Title = "A & M",
+                CreatedDate = Convert.ToDateTime("2021-04-02T18:00:00Z"),
+                Gallerys = GetGallerysById(Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2")),
+                IsShow = true,
+                GalleryUrl = "http://andychung0214.synology.me/images/Rurouni-Kenshin-desktopsky-00000[1].jpg"
+            });
+
+            albumeList.Add(new PhotoAlbumModel()
+            {
+                Title = "Chung Family",
+                CreatedDate = Convert.ToDateTime("2021-04-02T18:00:00Z"),
+                Gallerys = GetGallerysById(Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2")),
+                IsShow = true,
+                GalleryUrl = "http://andychung0214.synology.me/images/Rurouni-Kenshin-desktopsky-00000[1].jpg"
+            });
+
+            albumeList.Add(new PhotoAlbumModel()
+            {
+                Title = "Li Family",
+                CreatedDate = Convert.ToDateTime("2021-04-02T18:00:00Z"),
+                Gallerys = GetGallerysById(Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2")),
+                IsShow = true,
+                GalleryUrl = "http://andychung0214.synology.me/images/Rurouni-Kenshin-desktopsky-00000[1].jpg"
+            });
+
+            albumeList.Add(new PhotoAlbumModel()
+            {
+                Title = "Friends",
+                CreatedDate = Convert.ToDateTime("2021-04-02T18:00:00Z"),
+                Gallerys = GetGallerysById(Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2")),
+                IsShow = true,
+                GalleryUrl = "http://andychung0214.synology.me/images/Rurouni-Kenshin-desktopsky-00000[1].jpg"
+            });
+
+            albumeList.Add(new PhotoAlbumModel()
+            {
+                Title = "四極點環島",
+                CreatedDate = Convert.ToDateTime("2021-04-02T18:00:00Z"),
+                Gallerys = GetGallerysById(Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2")),
+                IsShow = true,
+                GalleryUrl = "http://andychung0214.synology.me/images/Rurouni-Kenshin-desktopsky-00000[1].jpg"
+            });
+
+            albumeList.Add(new PhotoAlbumModel()
+            {
+                Title = "一日北高",
+                CreatedDate = Convert.ToDateTime("2021-04-02T18:00:00Z"),
+                Gallerys = GetGallerysById(Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2")),
+                IsShow = true,
+                GalleryUrl = "http://andychung0214.synology.me/images/Rurouni-Kenshin-desktopsky-00000[1].jpg"
+            });
+
+            albumeList.Add(new PhotoAlbumModel()
+            {
+                Title = "京都馬拉松",
+                CreatedDate = Convert.ToDateTime("2021-04-02T18:00:00Z"),
+                Gallerys = GetGallerysById(Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2")),
+                IsShow = true,
+                GalleryUrl = "http://andychung0214.synology.me/images/Rurouni-Kenshin-desktopsky-00000[1].jpg"
+            });
+
+            albumeList.Add(new PhotoAlbumModel()
+            {
+                Title = "泳渡日月潭",
+                CreatedDate = Convert.ToDateTime("2021-04-02T18:00:00Z"),
+                Gallerys = GetGallerysById(Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2")),
+                IsShow = true,
+                GalleryUrl = "http://andychung0214.synology.me/images/Rurouni-Kenshin-desktopsky-00000[1].jpg"
+            });
+
+            return albumeList;
+        }
+        private List<GalleryItem> GetGallerysById(Guid id)
+        {
+            List<GalleryItem> galleries = new List<GalleryItem>();
+            if (id == Guid.Parse("3b3c1224-0311-44f0-8ec5-a64fe18ddec2"))
+            {
+                galleries.Add(new GalleryItem
+                {
+                    Title = "富貴角燈塔",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0604.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0604.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "富貴角燈塔2",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0608.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/north/DSC_0608.JPG"
+                });
+                galleries.Add(new GalleryItem
+                {
+                    Title = "三貂嶺燈塔",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/DSC_0627.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/DSC_0627.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "三貂嶺燈塔2",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/IMG_8192.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/east/IMG_8192.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "國聖燈塔",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0822.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0822.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "國聖燈塔2",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0823.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/west/DSC_0823.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "鵝鑾鼻燈塔",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/IMG_8408.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/IMG_8408.JPG"
+                });
+
+                galleries.Add(new GalleryItem
+                {
+                    Title = "鵝鑾鼻燈塔2",
+                    ImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/DSC_0791.JPG",
+                    ThumbImgUrl = "http://andychung0214.synology.me/images/cycles/taiwan/south/DSC_0791.JPG"
+                });
+            }
+
+            return galleries;
+        }
+
+        public static Bitmap ResizeImage(Image image, int width, int height)
+        {
+            var destRect = new Rectangle(0, 0, width, height);
+            var destImage = new Bitmap(width, height);
+
+            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            using (var graphics = Graphics.FromImage(destImage))
+            {
+                graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+                graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+
+                using (var wrapMode = new System.Drawing.Imaging.ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(System.Drawing.Drawing2D.WrapMode.TileFlipXY);
+                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                }
+            }
+
+            return destImage;
+        }
+
+        public bool ThumbnailCallback()
+        {
+            return false;
+        }
+        //public void Example_GetThumb(System.Windows.Forms.PaintEventArgs e)
+        //{
+        //    Image.GetThumbnailImageAbort myCallback =
+        //    new Image.GetThumbnailImageAbort(ThumbnailCallback);
+        //    Bitmap myBitmap = new Bitmap("Climber.jpg");
+        //    Image myThumbnail = myBitmap.GetThumbnailImage(
+        //    40, 40, myCallback, IntPtr.Zero);
+        //    e.Graphics.DrawImage(myThumbnail, 150, 75);
+        //}
+
+        //public void DrawImage2FloatRectF(System.Windows.Forms.PaintEventArgs e)
+        //{
+
+        //    // Create image.
+        //    Image newImage = Image.FromFile("SampImag.jpg");
+
+        //    // Create coordinates for upper-left corner of image.
+        //    float x = 100.0F;
+        //    float y = 100.0F;
+
+        //    // Create rectangle for source image.
+        //    RectangleF srcRect = new RectangleF(50.0F, 50.0F, 150.0F, 150.0F);
+        //    GraphicsUnit units = GraphicsUnit.Pixel;
+
+        //    // Draw image to screen.
+        //    e.Graphics.DrawImage(newImage, x, y, srcRect, units);
+        //}
+
+
+        public string GetResource(string project, string keyword, string lang = null)
+        {
+            string resources = string.Empty;
+
+            if (lang == null)
+            {
+                //if (_httpContextAccessor.HttpContext.User != null && HttpContext.Request.QueryString["Lang"] != null)
+                //{
+                //    lang = HttpContext.Current.Session["Lang"].ToString();
+
+                //    if (lang.ToUpper().Contains("EN-US"))
+                //    {
+                //        lang = "en-US";
+                //    }
+                //}
+                //else
+                //{
+                //    lang = "en-US";
+                //}
+                lang = "en-US";
+
+            }
+
+            resources = GetMultiLanguageValue(project, keyword, lang);
+
+            return resources;
+        }
+
+        public string GetMultiLanguageValue(string project, string keyword, string lang)
+        {
+            string resource = string.Empty;
+            if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(keyword) || string.IsNullOrEmpty(lang))
+            {
+                return resource;
+            }
+
+            var info = BlogService.Get_MultiLanguage_By(project, keyword, lang);
+
+            if (info != null)
+            {
+                resource = info.Value;
+            }
+            else if (info == null && lang == "en-US")
+            {
+                resource = string.Format("[{0}]", keyword);
+            }
+
+            return resource;
+        }
     }
 }

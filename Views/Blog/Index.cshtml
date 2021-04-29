@@ -32,7 +32,18 @@
                             </div>
                             <div class="blog__slide__content">
                                 <a class="blog__slide__label" href="/blog/details/@topItem.Id">Memory</a>
-                                <h3><a href="/blog/details/@topItem.Id">@topItem.Title</a></h3>
+                                <h3>
+
+                                    @if (Model.PNPages != null && Model.PNPages.Count > 0)
+                                    {
+                                        <a href="/blog/details/@topItem.Id?pId=@Model.PNPages.Where(o => o.MainArticleId == topItem.Id).Select(o => o.preArticleId)&nId=@Model.PNPages.Where(o => o.MainArticleId == topItem.Id).Select(o => o.nextArticleId)">@topItem.Title</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="/blog/details/@topItem.Id?">@topItem.Title</a>
+                                    }
+                                </h3>
+
                                 <p>@topItem.Abstract</p>
                             </div>
                         </div>
@@ -67,28 +78,40 @@
                                         @Html.DisplayFor(modelItem => item.Title)
                                     </h3>
                                 </a>
-                                @if(item.TagName != null)
+                                @if (item.TagName != null)
                                 {
 
-                                <p class="tag-list-inline">
-                                    Tag:
-                                    @if(Model.TagSelectedItem != null && Model.TagSelectedItem.Count >= 0){
-                                        @for(var i=0; i < Model.TagSelectedItem.Count; i++){
-                                            @if(i == Model.TagSelectedItem.Count - 1)
+                                    <p class="tag-list-inline">
+                                        Tag:
+                                        @if (Model.TagSelectedItem != null && Model.TagSelectedItem.Count >= 0)
+                                        {
+                                            @for (var i = 0; i < Model.TagSelectedItem.Count; i++)
                                             {
-                                                <a href="/blog/category?categoryName=@Model.TagSelectedItem[i].Name">@Model.TagSelectedItem[i].Name</a>
-                                            
-                                            }else{
-                                                <a href="/blog/category?categoryName=@Model.TagSelectedItem[i].Name">@Model.TagSelectedItem[i].Name,</a>
-                                    
+                                                @if (i == Model.TagSelectedItem.Count - 1)
+                                                {
+                                                    <a href="/blog/category?categoryName=@Model.TagSelectedItem[i].Name">@Model.TagSelectedItem[i].Name</a>
+
+                                                }
+                                                else
+                                                {
+                                                    <a href="/blog/category?categoryName=@Model.TagSelectedItem[i].Name">@Model.TagSelectedItem[i].Name,</a>
+
+                                                }
                                             }
                                         }
-                                    }
 
-                                </p>
+                                    </p>
                                 }
                                 <p>@item.Abstract</p>
-                                <a class="button" href="/blog/details/@item.Id?pId=@item.preArticleId&nId=@item.nextArticleId">Read More <i class="ti-arrow-right"></i></a>
+                                @if (Model.PNPages != null && Model.PNPages.Count > 0)
+                                {
+
+                                    <a class="button" href="/blog/details/@item.Id?pId=@Model.PNPages.Where(o => o.MainArticleId == item.Id).Select(o => o.preArticleId)&nId=@Model.PNPages.Where(o => o.MainArticleId == item.Id).Select(o => o.nextArticleId)">Read More <i class="ti-arrow-right"></i></a>
+                                }
+                                else
+                                {
+                                    <a class="button" href="/blog/details/@item.Id">Read More <i class="ti-arrow-right"></i></a>
+                                }
                             </div>
                         </div>
 

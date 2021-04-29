@@ -19,6 +19,8 @@ namespace CrownBlog.Models.ViewModel
         public int? Visitors { get; set; }
         public string BannerUrl { get; set; }
         public string IconUrl { get; set; }
+        public bool? Focus { get; set; }
+
 
         public List<Guid> TagGuids { get; set; }
         public string TagSelectedStrings { get; set; }

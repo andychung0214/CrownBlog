@@ -20,6 +20,8 @@ namespace CrownBlog.Models.ViewModel
         public string BannerUrl { get; set; }
         public string IconUrl { get; set; }
 
+        public bool Focus { get; set; }
+
         public int CommentCount { get; set; }
         public string TagName { get; set; }
         public List<TagItem> Tags { get; set; }
@@ -46,6 +48,16 @@ namespace CrownBlog.Models.ViewModel
         public string TagSelectedStrings { get; set; }
         public List<string> SelectedTags { get; set; }
         public List<TagItem> TagSelectedItem { get; set; }
+        public List<PreNextPageItem> PNPages { get; set; }
 
     }
+    public class PreNextPageItem
+    {
+        public Guid MainArticleId { get; set; }
+        public string preArticleTitle { get; set; }
+        public string nextArticleTitle { get; set; }
+        public Guid preArticleId { get; set; }
+        public Guid nextArticleId { get; set; }
+    }
+
 }
