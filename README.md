@@ -19,5 +19,5 @@
 
 
 ## Demo
-https://www.crownchung.tw/blog/index
+https://www.crownchung.tw/
 
