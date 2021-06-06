@@ -10,7 +10,7 @@
 - 熟悉 Razor語法  
 
 ## 套版
-套用 s[Sensive](https://themewagon.com/themes/free-bootstrap-4-html5-travel-blog-website-template-sensive/) 樣版  
+套用[Sensive](https://themewagon.com/themes/free-bootstrap-4-html5-travel-blog-website-template-sensive/) 樣版  
 
 
 ## 資料取得
