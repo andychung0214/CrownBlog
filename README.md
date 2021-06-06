@@ -17,3 +17,8 @@
 ## 資料取得
 - 建立DbContext 以提供底層資料使用
 - 使用API建立資料間接
+
+
+## Demo
+https://www.crownchung.tw/blog/index
+
