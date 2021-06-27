@@ -66,7 +66,7 @@ namespace CrownBlog
 
             services.AddSingleton<IMapper>(new Mapper(new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<ArticleModel, BlogArticle>();
+                cfg.CreateMap<BlogArticle, ArticleModel>();
                 cfg.CreateMap<ArticleRequestBody, BlogArticle>();
                 cfg.CreateMap<ArticleResponseBody, BlogArticle>();
                 cfg.CreateMap<BlogTag, TagItem>();
