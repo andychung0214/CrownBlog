@@ -124,27 +124,30 @@ namespace CrownBlog.Controllers
             try
             {
                 HttpResponseMessage response = new HttpResponseMessage();
-                requestBody.CreateDate = System.DateTime.Now;
+                if (requestBody.CreateDate == new DateTime() || requestBody.CreateDate == null)
+                {
+                    requestBody.CreateDate = System.DateTime.Now;
+                }
                 requestBody.Focus = false;
                 HttpResponseMessage article = BlogService.CreateArticle(response, requestBody);
 
-                if (requestBody.TagSelectedStrings != null)
-                {
-                    List<string> selectTags = requestBody.TagSelectedStrings.Split(",").ToList();
+                //if (requestBody.TagSelectedStrings != null)
+                //{
+                //    List<string> selectTags = requestBody.TagSelectedStrings.Split(",").ToList();
 
-                    List<BlogTag> totalTags = BlogService.GetAllBlogTags();
+                //    List<BlogTag> totalTags = BlogService.GetAllBlogTags();
 
-                    foreach (var tagItemName in selectTags)
-                    {
-                        //Add Tag
-                        TagRequestBody tagRequestBody = new TagRequestBody();
-                        tagRequestBody.TagId = Guid.NewGuid();
-                        tagRequestBody.Name = tagItemName;
-                        tagRequestBody.ArticleId = requestBody.Id;
-                        tagRequestBody.Status = 0;
-                        BlogService.CreateTag(tagRequestBody);
-                    }
-                }
+                //    foreach (var tagItemName in selectTags)
+                //    {
+                //        //Add Tag
+                //        TagRequestBody tagRequestBody = new TagRequestBody();
+                //        tagRequestBody.TagId = Guid.NewGuid();
+                //        tagRequestBody.Name = tagItemName;
+                //        tagRequestBody.ArticleId = requestBody.Id;
+                //        tagRequestBody.Status = 0;
+                //        BlogService.CreateTag(tagRequestBody);
+                //    }
+                //}
 
                 return StatusCode(StatusCodes.Status200OK);
             }

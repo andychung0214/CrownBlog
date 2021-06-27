@@ -105,11 +105,13 @@ namespace CrownBlog.BLL
                        orderby g.Key
                        select new { Name = g.Key, Count = g.Count() };
 
-        List < TagItem > listBlogTags = new List<TagItem>();
+            List <TagItem> listBlogTags = new List<TagItem>();
             foreach (var item in tags)
             {
                 listBlogTags.Add(new TagItem { Name = item.Name, Count = item.Count });
             }
+
+            listBlogTags = listBlogTags.OrderBy(o => o.Name).ToList();
 
             return listBlogTags;
         }
@@ -504,6 +506,30 @@ namespace CrownBlog.BLL
             try
             {
                 BlogContext.BlogArticles.Add(article);
+
+                if (articleInfo.TagSelectedStrings != null)
+                {
+                    List<string> selectTags = articleInfo.TagSelectedStrings.Split(",").ToList();
+
+                    List<BlogTag> totalTags = this.GetAllBlogTags();
+
+                    foreach (var tagItemName in selectTags)
+                    {
+                        //Add Tag
+                        TagRequestBody tagRequestBody = new TagRequestBody();
+                        tagRequestBody.TagId = Guid.NewGuid();
+                        tagRequestBody.Name = tagItemName;
+                        tagRequestBody.ArticleId = articleInfo.Id;
+                        tagRequestBody.Status = 0;
+                        //this.CreateTag(tagRequestBody);
+
+                        var tag = Mapper.Map<BlogTag>(tagRequestBody);
+                        BlogContext.BlogTags.Add(tag);
+                    }
+                        
+                }
+
+
                 BlogContext.SaveChangesAsync();
             }
             catch (Exception ex)
