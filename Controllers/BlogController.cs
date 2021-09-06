@@ -117,19 +117,19 @@ namespace CrownBlog.Controllers
                     });
 
                     vm.ArticleModels = dbArticles;
-                    //List<ArticleModel> totalArticles = BlogService.GetTotalArticles();
-                    //List<PreNextPageItem> pnPages = new List<PreNextPageItem>();
-                    //for (int idx = 0; idx < totalArticles.Count; idx++)
-                    //{
-                    //    PreNextPageItem item = new PreNextPageItem();
-                    //    item.MainArticleId = totalArticles[idx].Id;
-                    //    item.preArticleId = Idx != 0 ? totalArticles[Idx - 1].Id : new Guid();
-                    //    item.preArticleTitle = Idx != 0 ? totalArticles[Idx - 1].Title : string.Empty;
-                    //    item.nextArticleId = Idx < totalArticles.Count - 1 ? totalArticles[Idx + 1].Id : new Guid();
-                    //    item.nextArticleTitle = Idx < totalArticles.Count - 1 ? totalArticles[Idx + 1].Title : string.Empty;
-                    //    pnPages.Add(item);
-                    //}
-                    //vm.PNPages = pnPages;
+                    List<ArticleModel> totalArticles = BlogService.GetTotalArticles();
+                    List<PreNextPageItem> pnPages = new List<PreNextPageItem>();
+                    for (int idx = 0; idx < totalArticles.Count; idx++)
+                    {
+                        PreNextPageItem item = new PreNextPageItem();
+                        item.MainArticleId = totalArticles[idx].Id;
+                        item.preArticleId = Idx != 0 ? totalArticles[Idx - 1].Id : new Guid();
+                        item.preArticleTitle = Idx != 0 ? totalArticles[Idx - 1].Title : string.Empty;
+                        item.nextArticleId = Idx < totalArticles.Count - 1 ? totalArticles[Idx + 1].Id : new Guid();
+                        item.nextArticleTitle = Idx < totalArticles.Count - 1 ? totalArticles[Idx + 1].Title : string.Empty;
+                        pnPages.Add(item);
+                    }
+                    vm.PNPages = pnPages;
                     vm.Calendars = ConvertDatesToModel(allArticles.ToList());
                     vm.Years = allArticles.Select(o => o.CreateDate.Value.Year).Distinct().ToList();
                     vm.Tags = tags;
@@ -188,6 +188,15 @@ namespace CrownBlog.Controllers
                     }
                 }
                 vm.Messages = messageModels;
+
+                #region SideBar
+                IQueryable<BlogArticle> allArticles = BlogService.GetAllArticles();
+                vm.Years = allArticles.Select(o => o.CreateDate.Value.Year).Distinct().ToList();
+                vm.Calendars = ConvertDatesToModel(allArticles.ToList());
+
+                List<TagItem> tags = BlogService.GetAllTags();
+                vm.Tags = tags;
+                #endregion
 
                 return View(vm);
             }

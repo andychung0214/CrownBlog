@@ -183,12 +183,12 @@
                     <div>@Html.Raw(@Model.Description)</div>
                     @*{{articleDescription}}*@
                     @*<p>MCSE boot camps have its supporters and its detractors. Some people do not understand why you should have to spend money on boot camp when you can get the MCSE study materials yourself at a fraction of the camp price. However, who has the willpower</p>
-                        <p>MCSE boot camps have its supporters and its detractors. Some people do not understand why you should have to spend money on boot camp when you can get the MCSE study materials yourself at a fraction of the camp price. However, who has the willpower to actually sit through a self-imposed MCSE training. who has the willpower to actually sit through a self-imposed MCSE training.</p>
-                        <blockquote class="blockquote">
-                            <p class="mb-0">MCSE boot camps have its supporters and its detractors. Some people do not understand why you should have to spend money on boot camp when you can get the MCSE study materials yourself at a fraction of the camp price. However, who has the willpower to actually sit through a self-imposed MCSE training.</p>
-                        </blockquote>
-                        <p>MCSE boot camps have its supporters and its detractors. Some people do not understand why you should have to spend money on boot camp when you can get the MCSE study materials yourself at a fraction of the camp price. However, who has the willpower</p>
-                        <p>MCSE boot camps have its supporters and its detractors. Some people do not understand why you should have to spend money on boot camp when you can get the MCSE study materials yourself at a fraction of the camp price. However, who has the willpower</p>*@
+                <p>MCSE boot camps have its supporters and its detractors. Some people do not understand why you should have to spend money on boot camp when you can get the MCSE study materials yourself at a fraction of the camp price. However, who has the willpower to actually sit through a self-imposed MCSE training. who has the willpower to actually sit through a self-imposed MCSE training.</p>
+                <blockquote class="blockquote">
+                    <p class="mb-0">MCSE boot camps have its supporters and its detractors. Some people do not understand why you should have to spend money on boot camp when you can get the MCSE study materials yourself at a fraction of the camp price. However, who has the willpower to actually sit through a self-imposed MCSE training.</p>
+                </blockquote>
+                <p>MCSE boot camps have its supporters and its detractors. Some people do not understand why you should have to spend money on boot camp when you can get the MCSE study materials yourself at a fraction of the camp price. However, who has the willpower</p>
+                <p>MCSE boot camps have its supporters and its detractors. Some people do not understand why you should have to spend money on boot camp when you can get the MCSE study materials yourself at a fraction of the camp price. However, who has the willpower</p>*@
                     <div class="news_d_footer flex-column flex-sm-row">
                         <a href="#"><span class="align-middle mr-2"><i class="ti-heart"></i></span>Lily and 4 people like this</a>
                         <a class="justify-content-sm-center ml-sm-auto mt-sm-0 mt-2" href="#"><span class="align-middle mr-2"><i class="ti-themify-favicon"></i></span>06 Comments</a>
@@ -327,17 +327,24 @@
             <!-- Start Blog Post Siddebar -->
             <div class="col-lg-4 sidebar-widgets">
                 <div class="widget-wrap">
-                    @*@Html.Partial("../Tuple/_SearchBar")*@
+                    <partial name="../Tuple/_SearchBar.cshtml" />
 
-                    @*@Html.Partial("../Tuple/_SidebarCalendar", Model)*@
+                    @if (Model.Calendars != null && Model.Calendars.Count > 0)
+                    {
+                        @*@Html.Partial("../Tuple/_SidebarCalendar", Model)*@
+                        @await Html.PartialAsync("../Tuple/_SidebarCalendar", Model)
+                    }
 
-                    @*@Html.Partial("../Tuple/_SidebarTag", Model)*@
-
+                    @if (Model.Tags != null && Model.Tags.Count > 0)
+                    {
+                        @*@Html.Partial("../Tuple/_SidebarTag", Model.Tags)*@
+                        @await Html.PartialAsync("../Tuple/_SidebarTag", Model)
+                    }
 
                 </div>
             </div>
+            <!-- End Blog Post Siddebar -->
         </div>
-        <!-- End Blog Post Siddebar -->
     </div>
 </section>
 <!--================ End Blog Post Area =================-->

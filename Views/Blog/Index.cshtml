@@ -105,8 +105,10 @@
                                 <p>@item.Abstract</p>
                                 @if (Model.PNPages != null && Model.PNPages.Count > 0)
                                 {
+                                    //if(){
 
-                                    <a class="button" href="/blog/details/@item.Id?pId=@Model.PNPages.Where(o => o.MainArticleId == item.Id).Select(o => o.preArticleId)&nId=@Model.PNPages.Where(o => o.MainArticleId == item.Id).Select(o => o.nextArticleId)">Read More <i class="ti-arrow-right"></i></a>
+                                    //}
+                                    <a class="button" href="/blog/details/@item.Id?pId=@Model.PNPages.Where(o => o.MainArticleId == item.Id).Select(o => o.preArticleId).First()&nId=@Model.PNPages.Where(o => o.MainArticleId == item.Id).Select(o => o.nextArticleId).First()">Read More <i class="ti-arrow-right"></i></a>
                                 }
                                 else
                                 {
