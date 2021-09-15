@@ -62,7 +62,6 @@
 
     </script>
     <script type="text/javascript" src="https://andychung0214.synology.me/lib/moment/moment.js"></script>
-
 }
 
 @section Scripts{
@@ -96,7 +95,6 @@
 
         });
     </script>
-
 }
 
 <header id="topHeader" class="header_area">
@@ -156,7 +154,7 @@
             <div class="col-lg-8">
 
                 <div class="main_blog_details">
-                    <img class="img-fluid" :src="articleBannerUrl" alt="">
+                    <img class="img-fluid" src="@Model.BannerUrl" alt="">
                     <a href="#"><h4> @Model.Title</h4></a>
                     <div class="user_details">
                         <div class="float-left">
