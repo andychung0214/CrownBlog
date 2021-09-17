@@ -33,6 +33,7 @@ namespace CrownBlog.BLL
         /// </summary>
         IMapper Mapper { get; }
 
+        private static string defaultBanner = "https://andychung0214.synology.me/images/blog/default-image/rurouni-kenshin.jpg";
 
         private List<ArticleModel> AllArticles = new List<ArticleModel>();
         //private List<ArticleModel> allArticles
@@ -501,7 +502,12 @@ namespace CrownBlog.BLL
             //    Abstract = abstractText,
             //    CreateDate = createdDate.GetValueOrDefault() == new DateTime() ? DateTime.Now : createdDate
             //};
-            var article = Mapper.Map<BlogArticle>(articleInfo);
+            if (articleInfo.BannerUrl == null)
+            {
+                articleInfo.BannerUrl = defaultBanner;
+            }
+
+           var article = Mapper.Map<BlogArticle>(articleInfo);
 
             try
             {
@@ -558,7 +564,7 @@ namespace CrownBlog.BLL
                     articleEntitiy.Description = !string.IsNullOrEmpty(articleInfo.Description) ? articleInfo.Description : articleEntitiy.Description;
                     articleEntitiy.CreateDate = articleInfo.CreateDate.GetValueOrDefault() == new DateTime() ? articleEntitiy.CreateDate : articleInfo.CreateDate.GetValueOrDefault();
                     articleEntitiy.ModifyDate = articleInfo.ModifyDate.GetValueOrDefault() == new DateTime() ? articleEntitiy.CreateDate : articleInfo.ModifyDate.GetValueOrDefault(); ;
-                    articleEntitiy.BannerUrl = !string.IsNullOrEmpty(articleInfo.BannerUrl) ? articleInfo.BannerUrl : "";
+                    articleEntitiy.BannerUrl = !string.IsNullOrEmpty(articleInfo.BannerUrl) ? articleInfo.BannerUrl : defaultBanner;
                     articleEntitiy.Status = (articleInfo.Status != 1 && articleInfo.Status != 0) ? 0 : articleInfo.Status;
 
                     //var articleEntitiy = Mapper.Map<BlogArticle>(articleInfo);
