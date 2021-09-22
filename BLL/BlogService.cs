@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -127,8 +128,9 @@ namespace CrownBlog.BLL
         public IQueryable<BlogArticle> GetAllArticles()
         {
             IQueryable<BlogArticle> articles = from m in BlogContext.BlogArticles
-                                                    orderby m.CreateDate descending
-                                                    select m;
+                                                orderby m.CreateDate descending
+                                               where m.Status == 1
+                                               select m;
 
             return articles;
         }
@@ -137,6 +139,7 @@ namespace CrownBlog.BLL
         {
             IQueryable<BlogArticle> articles = from m in BlogContext.BlogArticles
                                                orderby m.CreateDate descending
+                                               where m.Status == 1
                                                select m;
 
             List<ArticleModel> totalArticles = new List<ArticleModel>();
@@ -226,7 +229,7 @@ namespace CrownBlog.BLL
             return articleModel;
         }
 
-        public List<ArticleModel> GetArticles(int? pageNumber, int pageSize, string searchString)
+        public List<ArticleModel> GetArticlesByPageFilter(int? pageNumber, int pageSize, string searchString)
         {
             var entities = new List<BlogArticle>();
 
@@ -300,6 +303,40 @@ namespace CrownBlog.BLL
             }
         }
 
+        public List<ArticleModel> GetArticles(int? pageNumber, int pageSize, string searchString)
+        {
+            var entities = new List<BlogArticle>();
+
+            entities = entities.ToList();
+
+            List<ArticleModel> articles = new List<ArticleModel>();
+
+            for (int idx = 0; idx < entities.Count; idx++)
+            {
+                articles.Add(
+                    new ArticleModel
+                    {
+                        Id = entities[idx].Id,
+                        Abstract = entities[idx].Abstract,
+                        CreateDate = entities[idx].CreateDate,
+                        BannerUrl = entities[idx].BannerUrl,
+                        Description = entities[idx].Description,
+                        Title = entities[idx].Title,
+                        Url = entities[idx].Url,
+                        Status = entities[idx].Status,
+                        Sequence = entities[idx].Sequence,
+                        ModifyDate = entities[idx].ModifyDate,
+                        preArticleTitle = idx <= 0 ? null : entities[idx - 1].Title,
+                        nextArticleTitle = idx == entities.Count - 1 ? null : entities[idx + 1].Title,
+                        preArticleId = idx <= 0 ? new Guid() : entities[idx - 1].Id,
+                        nextArticleId = idx == entities.Count - 1 ? new Guid() : entities[idx + 1].Id
+                    }
+                );
+            }
+
+            AllArticles = articles;
+            return articles;
+        }
         public ArticleModel GetArticleById(Guid articleId = new Guid(), Guid pId = new Guid(), Guid nId = new Guid())
         {
             ArticleModel article = new ArticleModel();
@@ -789,6 +826,77 @@ namespace CrownBlog.BLL
             }
 
             return entity;
+        }
+        #endregion
+
+        #region Infrustructure
+        public IQueryable<BlogArticle> SetPagination(IQueryable<BlogArticle> query, ListOptions listOptions)
+        {
+            if (listOptions != null && listOptions.PageIndex > 0 && listOptions.PageSize > 0)
+            {
+                query = query.Skip((listOptions.PageIndex - 1) * listOptions.PageSize).Take(listOptions.PageSize);
+            }
+
+            return query;
+        }
+
+        public IQueryable<BlogArticle> SetOrderBy(IQueryable<BlogArticle> query, ListOptions listOptions)
+        {
+            if (listOptions == null || listOptions.OrderBySets == null || listOptions.OrderBySets.Count == 0) return query;
+
+            try
+            {
+                Type entityType = typeof(BlogArticle);
+                IOrderedQueryable<BlogArticle> orderedQuery = null;
+                bool first = true;
+
+                foreach (OrderBySet set in listOptions.OrderBySets)
+                {
+                    System.Reflection.PropertyInfo prop = entityType.GetProperty(
+                        set.ColumnName,
+                        System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    Expression<Func<BlogArticle, object>> orderFilter = e => prop.GetValue(e);
+
+                    if (prop != null)
+                    {
+                        if (first)
+                        {
+                            if (set.Manner == OrderByManner.DESC)
+                            {
+                                orderedQuery = query.OrderByDescending(orderFilter);
+                            }
+                            else
+                            {
+                                orderedQuery = query.OrderBy(orderFilter);
+                            }
+
+                            first = false;
+                        }
+                        else
+                        {
+                            if (set.Manner == OrderByManner.DESC)
+                            {
+                                orderedQuery = orderedQuery.ThenByDescending(orderFilter);
+                            }
+                            else
+                            {
+                                orderedQuery = orderedQuery.ThenBy(orderFilter);
+                            }
+                        }
+                    }
+                }
+
+                if (orderedQuery != null)
+                {
+                    query = orderedQuery;
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
+            return query;
         }
         #endregion
 

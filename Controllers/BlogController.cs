@@ -36,6 +36,8 @@ namespace CrownBlog.Controllers
 
         private readonly IServiceProvider _serviceProvider;
 
+        public int totoalNumber;
+
         [Obsolete]
         public BlogController(BlogContext blogContext,  IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IMapper mapper, IServiceProvider serviceProvider) : base(httpContextAccessor)
         {
@@ -74,7 +76,7 @@ namespace CrownBlog.Controllers
             }
             else
             {
-                vm.ArticleModels = BlogService.GetArticles(pageNumber, pageSize, searchString);
+                vm.ArticleModels = BlogService.GetArticlesByPageFilter(pageNumber, pageSize, searchString);
                 //vm.Messages = BlogService.GetMessages();
                 //ArticleModel aa = BlogService.GetTags();
 
@@ -246,7 +248,7 @@ namespace CrownBlog.Controllers
             return View(vm);
         }
 
-        public IActionResult Category(string categoryName, int year = 0, int month = 0)
+        public async Task<IActionResult> Category(string categoryName, int? pageNumber, int year = 0, int month = 0, string pageIndex = "1", int pageSize = 6)
         {
             ArticleModel vm = new ArticleModel();
 
@@ -267,29 +269,54 @@ namespace CrownBlog.Controllers
                     }
                 }
                 vm.ArticleModels = cateogyrArticles;
-
+                totoalNumber = vm.ArticleModels.Count;
             }
             else if (year != 0 && month != 0)
             {
                 articles = BlogService.GetAllArticlesByYearMonth(year, month);
                 vm.ArticleModels = ConvertArticleEntitiesToModels(articles);
+                totoalNumber = vm.ArticleModels.Count;
             }
             else if (year != 0)
             {
                 articles = BlogService.GetAllArticlesByYear(year);
                 vm.ArticleModels = ConvertArticleEntitiesToModels(articles);
+                totoalNumber = vm.ArticleModels.Count;
             }
             else
             {
                 vm.ArticleModels = ConvertArticleEntitiesToModels(allArticles);
+                totoalNumber = vm.ArticleModels.Count;
             }
-
 
             List<TagItem> tags = BlogService.GetAllTags();
             vm.Tags = tags;
 
             vm.Calendars = ConvertDatesToModel(allArticles.ToList());
             vm.Years = allArticles.Select(o => o.CreateDate.Value.Year).Distinct().ToList();
+
+
+            #region Page
+            vm.CurrentPageIndex = int.Parse(pageIndex);
+            ViewBag.PageIndex = pageIndex;
+            ViewBag.TotalNum = totoalNumber;
+
+
+            IQueryable<BlogArticle> query = BlogService.GetAllArticles();
+
+            ListOptions listOptions = new ListOptions { PageIndex = int.Parse(pageIndex), PageSize = pageSize, EnableCount = true };
+
+            IQueryable<BlogArticle> pagedArticles = BlogService.SetOrderBy(query, listOptions);
+            pagedArticles = BlogService.SetPagination(pagedArticles, listOptions);
+
+            List<BlogArticle> blogArticles = pagedArticles.ToList();
+            List<ArticleModel> pagedModels = new List<ArticleModel>();
+            foreach (BlogArticle item in blogArticles)
+            {
+                pagedModels.Add(ConvertArticleEntitiyToModel(item));
+            }
+            vm.ArticleModels = pagedModels;
+            #endregion
 
             return View(vm);
         }

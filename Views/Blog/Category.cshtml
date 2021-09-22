@@ -13,6 +13,115 @@
     </style>
 }
 
+@section Scripts{
+    <script type="text/javascript">
+        $(function () {
+            var totalPage = parseInt(@ViewBag.TotalNum);
+            totalPage = Math.round(totalPage / 6);
+            if (@ViewBag.TotalNum % 6 !==0) {
+                totalPage += 1;
+            }
+
+            var currentIndex = getUrlParameter('pageIndex') || 1;
+            var pageOptions = { pageTotal: totalPage, curPage: parseInt(currentIndex), paginationId: '' };
+            dynamicPagingFunc(pageOptions);
+
+            function getUrlParameter(name) {
+                name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+                var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+                var results = regex.exec(location.search);
+                return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+            };
+
+            function dynamicPagingFunc(pageOptions) {
+                var pageTotal = pageOptions.pageTotal || 1;
+                var curPage = pageOptions.curPage || 1;
+                var doc = document;
+                var paginationId = doc.getElementById('' + pageOptions.paginationId + '') || doc.getElementById('pagination');
+                var html = '';
+                if (curPage > pageTotal) {
+                    curPage = 1;
+                }
+                /*總頁數小於6，全部顯示*/
+                if (pageTotal <= 6) {
+                    html = appendItem(pageTotal, curPage, html);
+                    paginationId.innerHTML = html;
+                }
+                /*總頁數大於6時，要分析當前頁*/
+                if (pageTotal > 6) {
+                    if (curPage <= 4) {
+                        html = appendItem(pageTotal, curPage, html);
+                        paginationId.innerHTML = html;
+                    } else if (curPage > 4) {
+                        html = appendItem(pageTotal, curPage, html);
+                        paginationId.innerHTML = html;
+                    }
+                }
+            }
+
+            function appendItem(pageTotal, curPage, html) {
+                var starPage = 0;
+                var endPage = 0;
+
+                var ltClass = curPage === 1 ? 'pagination nopage' : 'pagination';
+                var rtClass = pageTotal === curPage ? 'rtbn nopage' : 'rtbn';
+
+                //html += "<dt class='" + ltClass + "'> <a href='/blog/category?pageIndex=" + (parseInt(curPage - 1)) + "'></a></dt>";
+                //html += "<ul class='" + ltClass + "'> <a href='/blog/category?pageIndex=" + (parseInt(curPage - 1)) + "'></a></ul>";
+
+                if (pageTotal <= 6) {
+                    starPage = 1;
+                    endPage = pageTotal;
+                } else if (pageTotal > 6 && curPage <= 5) {
+                    starPage = 1;
+                    endPage = 6;
+                    if (curPage == 5) {
+                        endPage = 6;
+                    }
+                } else {
+                    if (pageTotal == curPage) {
+                        starPage = (parseInt(curPage - 5));
+                        endPage = (parseInt(curPage));
+                    } else {
+                        starPage = (parseInt(curPage - 3));
+                        endPage = (parseInt(curPage + 1));
+                    }
+
+                    //html += "<ul class><a id='first' class='page-link' href='/blog/category?pageIndex=1'>1</a><dd class='more-page'>...</ul></ul>";
+                }
+
+                for (let i = starPage; i <= endPage; i++) {
+                    if (i == curPage) {
+                        html += '<li class="page-item active"><a id="first" class="page-link" href="/blog/category?pageIndex=' + i + '">' + i + '</a></li>';
+                    } else {
+                        html += '<li class="page-item"><a class="page-link" href="/blog/category?pageIndex=' + i + '">' + i + '</a></li>';
+                    }
+                }
+
+                if (curPage < (parseInt(pageTotal) - 2)) {
+                    html += '<li class="page-item more-page">...</li>';
+                }
+                if (curPage <= (parseInt(pageTotal) - 2)) {
+                    html += '<li class="page-item"><a class="page-link" href="/blog/category?pageIndex=' + pageTotal + '">' + pageTotal + '</a></li>';
+                }
+
+                //if (pageTotal <= 6) {
+                //    html += '<ul class="' + rtClass +'"><a  class="page-link" href="/blog/category?pageIndex=' + (parseInt(currentIndex) + 1) + '"></a></ul>';
+                //} else {
+                //    if (curPage < (parseInt(pageTotal) - 2)) {
+                //        html += '<li class="page-item more-page">...</li>';
+                //    }
+                //    if (curPage <= (parseInt(pageTotal) - 2)) {
+                //        html += '<li class="page-item"><a class="page-link" href="/blog/category?pageIndex=' + pageTotal + '">' + pageTotal + '</a></li>';
+                //    }
+                //    //html += '<ul class="' + rtClass +'"><a class="page-link" href="/blog/category?pageIndex=' + (parseInt(currentIndex) + 1) + '"></a></ul>';
+                //}
+                return html;
+            }
+        });
+    </script>
+}
+
 
 <partial name="../Shared/_Header.cshtml" />
 
@@ -25,39 +134,40 @@
         <div class="row">
             <div class="col-lg-8">
                 <div class="row">
-                    @foreach (var item in Model.ArticleModels)
+                    @if(Model.ArticleModels != null && Model.ArticleModels.Count > 0){
+
+                        foreach (var item in Model.ArticleModels)
                     {
-                        <div class="col-md-6">
-                            <div class="single-recent-blog-post card-view">
-                                <div class="thumb">
-                                    <img class="card-img rounded-0" src=@item.BannerUrl alt="">
-                                    <ul class="thumb-info">
-                                        <li><a href="#"><i class="ti-user"></i>Admin</a></li>
-                                        <li><a href="#"><i class="ti-themify-favicon"></i>@item.CommentCount  Comments</a></li>
-                                    </ul>
-                                </div>
-                                <div class="details mt-20">
-                                    <a href="blog-single.html">
-                                        <h3>
-                                            @item.Title
-                                        </h3>
-                                    </a>
-                                    <p>@item.Abstract</p>
-                                    <a class="button" href="/blog/details/@item.Id" >Read More <i class="ti-arrow-right"></i></a>
-                                </div>
+                    <div class="col-md-6">
+                        <div class="single-recent-blog-post card-view">
+                            <div class="thumb">
+                                <img class="card-img rounded-0" src=@item.BannerUrl alt="">
+                                <ul class="thumb-info">
+                                    <li><a href="#"><i class="ti-user"></i>Admin</a></li>
+                                    <li><a href="#"><i class="ti-themify-favicon"></i>@item.CommentCount  Comments</a></li>
+                                </ul>
+                            </div>
+                            <div class="details mt-20">
+                                <a href="blog-single.html">
+                                    <h3>
+                                        @item.Title
+                                    </h3>
+                                </a>
+                                <p>@item.Abstract</p>
+                                <a class="button" href="/blog/details/@item.Id">Read More <i class="ti-arrow-right"></i></a>
                             </div>
                         </div>
+                    </div>
+                    }
                     }
 
-                    <div class="row">
-                        <div class="col-lg-12">
 
-                            @await Component.InvokeAsync("Pagination")
 
-                        </div>
-                    </div>
                 </div>
 
+                <nav class="blog-pagination justify-content-center d-flex">
+                    <ul id="pagination" class="page pagination"></ul>
+                </nav>
             </div>
 
             <!-- Start Blog Post Siddebar -->

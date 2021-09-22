@@ -50,6 +50,8 @@ namespace CrownBlog.Models.ViewModel
         public List<TagItem> TagSelectedItem { get; set; }
         public List<PreNextPageItem> PNPages { get; set; }
 
+        public int CurrentPageIndex { get; set; }
+
     }
     public class PreNextPageItem
     {
